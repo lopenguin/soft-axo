@@ -18,9 +18,9 @@ Lorenzo Shaikewitz, 8/4/2021
 const short BUTTON_PIN{23};
 
 const int FLASH_CS_PIN{ 6 };
-const char FILE_NAME[15]{"walk1.csv"};
-const int FILE_SIZE{ 840000 };    // Lasts 5 minutes of data... also quite large.
-const int BUF_SIZE{1400};    // should be multiple of 28 (FIX TO 256 at a time)
+const char FILE_NAME[15]{"testMe.csv"};
+const int FILE_SIZE{ 960000 };    // Lasts 5 minutes of data... also quite large.
+const int BUF_SIZE{512};    // should be a multiple of both 256 (page size) and 32 (quat write size)
 int lastPos{ 0 };
 
 NXPMotionSense imu;
@@ -87,25 +87,33 @@ void loop() {
         }
     }
 
-    SerialFlashFile file = SerialFlash.open(FILE_NAME);
-    file.seek(lastPos);
-    if (!file.write(buf, BUF_SIZE)) {
-        file.close();
+    if (!saveFromBuf(buf, BUF_SIZE, lastPos)) {
         digitalWrite(LED_BUILTIN, HIGH);
         Serial.println("File size exceeded!");
         while (1);
     }
     Serial.println(buf);
-    lastPos = file.position();
+}
+
+bool saveFromBuf(char* buf, const int bufSize, int& startPos) {
+    SerialFlashFile file = SerialFlash.open(FILE_NAME);
+
+    file.seek(startPos);
+    if (!file.write(buf, bufSize)) {
+        file.close();
+        return false;
+    }
+
+    startPos = file.position();
     file.flush();
-    bufIndex = 0;
+    return true;
 }
 
 void addQuatToBuf(float* quat, char* buf, int& bufIndex) {
-    // each quat is 6 chars: +x.xxxx
+    // each quat is 7 chars: +x.xxxx
     // separated by ','
     // line ends in '\n'
-    // total: 24 chars
+    // total: 32 chars
     for (int i{ 0 }; i < 4; ++i) {
         String q = String(quat[i], 4);
         const char* q_cStr = q.c_str();
@@ -113,14 +121,14 @@ void addQuatToBuf(float* quat, char* buf, int& bufIndex) {
         // Serial.print(" : ");
         // Serial.println(q_cStr[0]);
         if (q_cStr[0] == '-') {
-            for (int j{ 0 }; j < 6; ++j) {
+            for (int j{ 0 }; j < 7; ++j) {
                 buf[bufIndex] = q_cStr[j];
                 ++bufIndex;
             }
         } else {
             buf[bufIndex] = '0';
             ++bufIndex;
-            for (int j{ 0 }; j < 5; ++j) {
+            for (int j{ 0 }; j < 6; ++j) {
                 buf[bufIndex] = q_cStr[j];
                 ++bufIndex;
             }
