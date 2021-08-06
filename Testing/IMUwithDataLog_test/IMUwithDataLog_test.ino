@@ -110,7 +110,7 @@ void loop() {
             Serial.println("File write failure :(");
         }
         Serial.println(millis()- startTime);
-        dataFile.close();
+        dataFile.flush();
         Serial.println(millis()- startTime);
     }
 }
