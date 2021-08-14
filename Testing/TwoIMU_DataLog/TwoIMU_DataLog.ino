@@ -10,6 +10,7 @@ Lorenzo Shaikewitz, 8/4/2021
 */
 
 #include <NXPMotionSense_Lorenzo.h>
+#include "utility/NXPSensorRegisters.h"
 #include <Wire.h>
 #include <EEPROM.h>
 
@@ -24,8 +25,11 @@ const int FILE_SIZE{ 960000 };    // Lasts 5 minutes of data... also quite large
 const int BUF_SIZE{512};    // should be a multiple of both 256 (page size) and 32 (quat write size)
 int lastPos{ 0 };
 
-NXPMotionSense imu;
-NXPSensorFusion filter;
+NXPMotionSense imu_prop(FXOS8700_I2C_ADDR0, FXAS21002_I2C_ADDR0);
+NXPSensorFusion filter_prop;
+
+NXPMotionSense imu_ada(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1);
+NXPSensorFusion filter_ada;
 
 void setup() {
     Serial.begin(9600);
@@ -39,8 +43,11 @@ void setup() {
     }
 
     // IMU setup
-    imu.begin();
-    filter.begin(100);  // use this to change the update rate (in Hz)
+    imu_prop.begin();
+    imu_ada.begin();
+
+    filter_prop.begin(100);
+    filter_ada.begin(100);
 
     // SerialFlash setup
     if (!SerialFlash.begin(FLASH_CS_PIN)) {
@@ -66,22 +73,34 @@ void setup() {
     }
 }
 
+struct SpaceXYZ {
+  float x{};
+  float y{};
+  float z{};
+};
+
 void loop() {
-    float ax, ay, az;
-    float gx, gy, gz;
-    float mx, my, mz;
-    float quat[4];
+    SpaceXYZ acc_prop{};
+    SpaceXYZ gyr_prop{};
+    SpaceXYZ mag_prop{};
+
+    SpaceXYZ acc_ada{};
+    SpaceXYZ gyr_ada{};
+    SpaceXYZ mag_ada{};
+
+    float quat_prop[4];
+    float quat_ada[4];
 
     char buf[BUF_SIZE]{};
     int bufIndex{0};
 
     while (bufIndex < BUF_SIZE) {
-        if (imu.available()) {
+        if (imu_prop.available()) {
             // Read the motion sensors
-            imu.readMotionSensor(ax, ay, az, gx, gy, gz, mx, my, mz);
+            imu_prop.readMotionSensor(acc_prop.x, acc_prop.y, acc_prop.z, gyr_prop.x, gyr_prop.y, gyr_prop.z, mag_prop.x, mag_prop.y, mag_prop.z);
 
             // Update the SensorFusion filter
-            filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+            filter_prop.update(gyr_prop.x, gyr_prop.y, gyr_prop.z, acc_prop.x, acc_prop.y, acc_prop.z, mag_prop.x, mag_prop.y, mag_prop.z);
 
             filter.getQuaternion(quat);
             addQuatToBuf(quat, buf, bufIndex);
