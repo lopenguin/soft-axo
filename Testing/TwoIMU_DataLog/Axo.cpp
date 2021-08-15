@@ -5,6 +5,7 @@ Lorenzo Shaikewitz, 8/10/2021
 #include "Axo.h"
 #include "constants.h"
 
+#include <Arduino.h>
 #include <NXPMotionSense_Lorenzo.h>
 #include "utility/NXPSensorRegisters.h"
 #include <Wire.h>
@@ -12,6 +13,19 @@ Lorenzo Shaikewitz, 8/10/2021
 
 #include <SerialFlash.h>
 #include <SPI.h>
+
+
+const void IMUCarrier::printQuat() const {
+    Serial.print(m_quat[0]);
+    Serial.print(',');
+    Serial.print(m_quat[1]);
+    Serial.print(',');
+    Serial.print(m_quat[2]);
+    Serial.print(',');
+    Serial.print(m_quat[3]);
+    Serial.print('\n');
+}
+
 
 Message Axo::begin() {
     // IMU setup
@@ -60,6 +74,16 @@ void Axo::updateIMUs() {
         saveFromBuf();
         m_quatBufIndex = 0;
     }
+}
+
+
+void Axo::printData() {
+    Serial.print("Prop: ");
+    m_imuProp.printQuat();
+    Serial.print('\t');
+    Serial.print("Ada: ");
+    m_imuAda.printQuat();
+    Serial.print('\n');
 }
 
 

@@ -33,6 +33,9 @@ public:
 
     const float* getQuat() const { return m_quat; }
 
+    // prints out the quaternion.
+    const void printQuat() const;
+
     NXPMotionSense m_imu;
     NXPSensorFusion m_filter;
 
@@ -51,7 +54,8 @@ Note: using motors not yet implemented.
 */
 class Axo {
 public:
-    Axo(bool useMotors = false) :
+    // defaults to passive, 5 minute recording time
+    Axo(int runTimeSeconds = 300, bool useMotors = false) :
         m_useMotors{useMotors},
         m_fileSize{timeToFileSize(runTimeSeconds, 2)}
     { /*Does nothing*/ }
@@ -59,8 +63,14 @@ public:
     // filename must be < 7 characters. No extension needed.
     Message begin(String filename = "data_");
 
+    bool propIMUAvail() { return m_imuProp.available(); }
+    bool adaIMUAvail() { return m_imuAda.available(); }
+
     // updates both IMUs together & saves data to buffer
     void updateIMUs();
+
+    // prints most recent data from both IMUs to serial monitor
+    void printData();
 
     const char* getSavefile() const { return m_savefile; }
 
