@@ -9,7 +9,8 @@ Lorenzo Shaikewitz, 8/10/2021
 namespace property {
     constexpr unsigned int FLASH_MAX_PAGES{32768};
     constexpr int FLASH_PAGE_SIZE{256};
-    constexpr int QUAT_DATA_SIZE{32};   // total write size per data point.
+    constexpr int QUAT_NUM_DECIMALS{2};
+    constexpr int QUAT_DATA_SIZE{4 + QUAT_NUM_DECIMALS*4};   // total write size per quat
     constexpr int IMU_UPDATE_HZ{100};
 }
 

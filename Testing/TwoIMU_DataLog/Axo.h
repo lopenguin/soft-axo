@@ -53,13 +53,13 @@ class Axo {
 public:
     Axo(bool useMotors = false) :
         m_useMotors{useMotors},
-        m_fileSize{timeToFileSize(runTimeSeconds)}
+        m_fileSize{timeToFileSize(runTimeSeconds, 2)}
     { /*Does nothing*/ }
 
     // filename must be < 7 characters. No extension needed.
     Message begin(String filename = "data_");
 
-    // updates both IMUs together, saves data to buffer
+    // updates both IMUs together & saves data to buffer
     void updateIMUs();
 
     const char* getSavefile() const { return m_savefile; }
@@ -68,13 +68,17 @@ public:
 private:
     void addBothQuatToBuf();
     // TODO: addRelQuatToBuf();
-    bool saveFromBuf(char* buf, const int bufSize);
-    int timeToFileSize(int runTimeSeconds); // UNTESTED!!
+    void addCharToBuf(char c);  // does buf size checking, calls saveFromBuf if buf full
+    bool saveFromBuf(char* buf = m_quatBuf, const int bufSize = property::FLASH_PAGE_SIZE);
+
+    int timeToFileSize(int runTimeSeconds, int numQuats = 2); // UNTESTED!!
 
     bool m_useMotors{};
     const int m_fileSize{};
     char m_savefile[10]{};
     int m_currentPos{0};
+    char m_quatBuf[property::FLASH_PAGE_SIZE]{};
+    int m_quatBufIndex{};
 
     IMUCarrier m_imuProp(FXOS8700_I2C_ADDR0, FXAS21002_I2C_ADDR0);
     IMUCarrier m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1);

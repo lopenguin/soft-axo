@@ -55,11 +55,59 @@ void Axo::updateIMUs() {
     m_imuProp.update();
     m_imuAda.update();
 
-
+    addBothQuatToBuf();
+    if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
+        saveFromBuf();
+        m_quatBufIndex = 0;
+    }
 }
 
 
-bool Axo::saveFromBuf(char* buf, const int bufSize = property::FLASH_PAGE_SIZE) {
+void Axo::addBothQuatToBuf() {
+    // each quat is 5 chars: +x.xx (x4)
+    // separated by ',' and terminated by '\n' (+4 chars)
+    // total: 24/quat (see constants.h for potentially updated number)
+    // property::QUAT_DATA_SIZE
+
+    char quatProp[4] = m_imuProp.getQuat();
+
+    // save the prop
+    for (int i{0}; i < 4; ++i) {
+        String q = String(quatProp[i],property::QUAT_NUM_DECIMALS);
+        const char* q_cStr = q.c_str();
+
+        if (q_cStr[0] == '-') {
+            for (int j{ 0 }; j < 7; ++j) {
+                addCharToBuf(q_cStr[j]);
+            }
+        } else {
+            addCharToBuf('0');
+            for (int j{ 0 }; j < 6; ++j) {
+                addCharToBuf(q_cStr[j]);
+            }
+        }
+        if (i != 3)
+            addCharToBuf(',');
+        else
+            addCharToBuf('\n');
+    }
+
+    char quatAda[4] = m_imuAda.getQuat();
+}
+
+
+void Axo::addCharToBuf(char c) {
+    if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
+        saveFromBuf();
+        m_quatBufIndex = 0;
+    }
+
+    m_quatBuf[m_quatBufIndex] = c;
+    ++m_quatBufIndex;
+}
+
+
+bool Axo::saveFromBuf(char* buf = m_quatBuf, const int bufSize = property::FLASH_PAGE_SIZE) {
     SerialFlashFile file = SerialFlash.open(m_savefile);
 
     file.seek(m_currentPos);
@@ -74,9 +122,9 @@ bool Axo::saveFromBuf(char* buf, const int bufSize = property::FLASH_PAGE_SIZE) 
 }
 
 
-int Axo::timeToFileSize(int runTimeSeconds) {
+int Axo::timeToFileSize(int runTimeSeconds, int numQuats = 2) {
     int numDataPoints = runTimeSeconds * property::IMU_UPDATE_HZ;
-    int pagesNeeded = (numDataPoints * property::QUAT_DATA_SIZE) / property::FLASH_PAGE_SIZE;
+    int pagesNeeded = (numDataPoints * property::QUAT_DATA_SIZE * numQuats) / property::FLASH_PAGE_SIZE;
     if (pagesNeeded > property::FLASH_MAX_PAGES)
         pagesNeeded = property::FLASH_MAX_PAGES;
     return pagesNeeded;
