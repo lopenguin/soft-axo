@@ -23,16 +23,17 @@ const void IMUCarrier::printQuat() const {
     Serial.print(m_quat[2]);
     Serial.print(',');
     Serial.print(m_quat[3]);
-    Serial.print('\n');
 }
 
 
-Message Axo::begin() {
+Message Axo::begin(String filename) {
+    if (filename.length() > (property::FILENAME_MAX_LEN + 2)) {
+        return Message::FILE_TOO_LONG;
+    }
+
     // IMU setup
     m_imuProp.begin();
-    m_filterProp.begin(property::IMU_UPDATE_HZ);
     m_imuAda.begin();
-    m_filterAda.begin(property::IMU_UPDATE_HZ);
 
     // flash setup
     if (!SerialFlash.begin(pin::FLASH_CS)) {
@@ -40,17 +41,17 @@ Message Axo::begin() {
     }
     String tryfile = filename + "00";
     int number = 0;
-    while (SerialFlash.exists(tryfile.c_str()) {
+    while (SerialFlash.exists(tryfile.c_str())) {
         // increment the number
         ++number;
         String add;
         if (number < 10)
-            add = 0 + String(number);
+            add = "0" + String(number);
         else
             add = String(number);
         tryfile = filename + add;
     }
-    m_savefile = tryfile.toCharArray();
+    tryfile.toCharArray(m_savefile, tryfile.length() + 1);
 
     // create save file
     if (!SerialFlash.create(m_savefile, m_fileSize)) {
@@ -65,15 +66,24 @@ Message Axo::begin() {
 }
 
 
-void Axo::updateIMUs() {
-    m_imuProp.update();
+void Axo::updateAdaIMU() {
+    m_propUpdated = 0;
     m_imuAda.update();
+}
 
-    addBothQuatToBuf();
+void Axo::updatePropIMU() {
+    m_propUpdated = 1;
+    m_imuProp.update();
+}
+
+
+bool Axo::saveData() {
+    bool flashHasSpace = addBothQuatToBuf();
     if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
-        saveFromBuf();
+        flashHasSpace = saveFromBuf();
         m_quatBufIndex = 0;
     }
+    return flashHasSpace;
 }
 
 
@@ -87,55 +97,65 @@ void Axo::printData() {
 }
 
 
-void Axo::addBothQuatToBuf() {
-    // each quat is 5 chars: +x.xx (x4)
+bool Axo::addBothQuatToBuf() {
+    // each quat is 6 chars: +x.xxx (x4) without any formatting
+    // formatting: +1 (always positive), drop decimal.
+    // +x.xxx -> xxxx (4 chars)
+
     // separated by ',' and terminated by '\n' (+4 chars)
     // total: 24/quat (see constants.h for potentially updated number)
     // property::QUAT_DATA_SIZE
 
-    char quatProp[4] = m_imuProp.getQuat();
+    // lambda to do the saving.
+    auto saveQuat{
+        [this](const float* quat, bool end) -> bool {
+            bool flashHasSpace = 1;
+            for (int i{0}; i < 4; ++i) {
+                // convert to int, then string.
+                char q_cStr[property::QUAT_NUM_DECIMALS + 2];
+                itoa(static_cast<int>((quat[i]+1) * pow(10,property::QUAT_NUM_DECIMALS)), q_cStr, 16);
 
-    // save the prop
-    for (int i{0}; i < 4; ++i) {
-        String q = String(quatProp[i],property::QUAT_NUM_DECIMALS);
-        const char* q_cStr = q.c_str();
+                for (int j{ 0 }; j < (property::QUAT_NUM_DECIMALS); ++j) {
+                    flashHasSpace = addCharToBuf(q_cStr[j]);
+                }
 
-        if (q_cStr[0] == '-') {
-            for (int j{ 0 }; j < 7; ++j) {
-                addCharToBuf(q_cStr[j]);
+                if (i != 3 || !end)
+                    flashHasSpace = addCharToBuf(',');
+                else
+                    flashHasSpace = addCharToBuf('\n');
             }
-        } else {
-            addCharToBuf('0');
-            for (int j{ 0 }; j < 6; ++j) {
-                addCharToBuf(q_cStr[j]);
-            }
+            return flashHasSpace;
         }
-        if (i != 3)
-            addCharToBuf(',');
-        else
-            addCharToBuf('\n');
-    }
+    };
 
-    char quatAda[4] = m_imuAda.getQuat();
+    const float* quatProp = m_imuProp.getQuat();
+    const float* quatAda = m_imuAda.getQuat();
+
+    return saveQuat(quatProp, 0) && saveQuat(quatAda, 1);
 }
 
 
-void Axo::addCharToBuf(char c) {
+bool Axo::addCharToBuf(char c) {
+    bool flashHasSpace = 1;
     if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
-        saveFromBuf();
+        flashHasSpace = saveFromBuf();
         m_quatBufIndex = 0;
     }
 
     m_quatBuf[m_quatBufIndex] = c;
     ++m_quatBufIndex;
+
+    return flashHasSpace;
 }
 
 
-bool Axo::saveFromBuf(char* buf = m_quatBuf, const int bufSize = property::FLASH_PAGE_SIZE) {
+bool Axo::saveFromBuf() {
+    int bufSize{property::FLASH_PAGE_SIZE};
+
     SerialFlashFile file = SerialFlash.open(m_savefile);
 
     file.seek(m_currentPos);
-    if (!file.write(buf, bufSize)) {
+    if (!file.write(m_quatBuf, bufSize)) {
         file.close();
         return false;
     }
@@ -146,10 +166,10 @@ bool Axo::saveFromBuf(char* buf = m_quatBuf, const int bufSize = property::FLASH
 }
 
 
-int Axo::timeToFileSize(int runTimeSeconds, int numQuats = 2) {
+int Axo::timeToFileSize(int runTimeSeconds, int numQuats) {
     int numDataPoints = runTimeSeconds * property::IMU_UPDATE_HZ;
-    int pagesNeeded = (numDataPoints * property::QUAT_DATA_SIZE * numQuats) / property::FLASH_PAGE_SIZE;
-    if (pagesNeeded > property::FLASH_MAX_PAGES)
-        pagesNeeded = property::FLASH_MAX_PAGES;
-    return pagesNeeded;
+    long fileSizeNeeded = (numDataPoints * property::QUAT_DATA_SIZE * numQuats);
+    if (fileSizeNeeded > property::FLASH_MAX_PAGES * property::FLASH_PAGE_SIZE)
+        fileSizeNeeded = property::FLASH_MAX_PAGES * property::FLASH_PAGE_SIZE;
+    return fileSizeNeeded;
 }

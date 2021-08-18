@@ -21,8 +21,8 @@ Lorenzo Shaikewitz, 8/14/2021 TEST!!!!!
 #include "constants.h"
 
 const short BUTTON_PIN{23};
-const char FILE_NAME[10]{"testMe"};
-const int runTimeSeconds{300};
+String FILE_NAME{"testMe"};
+const int runTimeSeconds{60};
 
 Axo axo(runTimeSeconds);
 
@@ -36,7 +36,8 @@ void setup() {
         delay(50);
     }
 
-    Message m = axo.begin();
+
+    Message m = axo.begin(FILE_NAME);
     switch (m) {
         case Message::OK:
             Serial.println("Axo started successfully!");
@@ -49,6 +50,10 @@ void setup() {
             Serial.println("No flash space left! Please erase chip.");
             while (1);
             break;
+        case Message::FILE_TOO_LONG:
+            Serial.println("File name is too long. Check constants.h for max length.");
+            while (1);
+            break;
     }
 
     Serial.print("Saving data to: ");
@@ -56,9 +61,35 @@ void setup() {
     Serial.println("-----");
 }
 
+unsigned long startTime{};
+
+// consider adding 10 second delay to savedata so save has time to make constant.
 void loop() {
-    if (axo.propIMUAvail()) {
-        axo.updateIMUs();
-        axo.printData();
+    if (axo.propUpdated()) {
+        if (axo.adaIMUAvail()) {
+            Serial.println(micros() - startTime);
+            startTime = micros();
+            axo.updateAdaIMU();
+        }
+    } else {
+        if (axo.propIMUAvail()) {
+            axo.updatePropIMU();
+            axo.printData();
+
+            if (!axo.saveData()) {
+                Serial.println("File space exceeded.");
+                digitalWrite(LED_BUILTIN, HIGH);
+                while (1) {
+                    blink(LED_BUILTIN);
+                }
+            }
+        }
     }
+}
+
+void blink(int pin) {
+    digitalWrite(pin, HIGH);
+    delay(1000);
+    digitalWrite(pin, LOW);
+    delay(1000);
 }
