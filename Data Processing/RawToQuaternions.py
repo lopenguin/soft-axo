@@ -4,9 +4,9 @@ import pathlib
 import math
 
 #----------Change these file names to fit-----------------------------------------------
-RAW_DATA_FILE = 'walkingFast.bin'
-QUATERNION_SAVE_FILE = 'walking_quaternions.csv'
-EULER_SAVE_FILE = 'walking_euler.csv'
+RAW_DATA_FILE = 'isolated_angles/isolatedAngles.bin'
+QUATERNION_SAVE_FILE = 'isolated_angles/isolatedAngles_quaternions.csv'
+EULER_SAVE_FILE = 'isolated_angles/isolatedAngles_euler.csv'
 #---------------------------------------------------------------------------------------
 
 # sourced from https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/
@@ -14,7 +14,7 @@ def euler_from_quaternion(q):
         """
         Convert a quaternion into euler angles (roll, pitch, yaw)
         roll is rotation around x in radians (counterclockwise)
-        pitch is rotation around y in radians (counterclockwise) <- this is what we want
+        pitch is rotation around y in radians (counterclockwise) <- what we want for foot
         yaw is rotation around z in radians (counterclockwise)
         """
         x = q[0]
@@ -51,6 +51,7 @@ with open(EULER_SAVE_FILE, mode = 'w') as walking_data:
             line = raw_data.read(16)
             while (len(line) != 0):
                 row = []
+                line_counter = line_counter + 1
                 for index in range(0,15,2):
                     num = (line[index] << 8) | line[index+1]
                     # convert this num to the quaternion

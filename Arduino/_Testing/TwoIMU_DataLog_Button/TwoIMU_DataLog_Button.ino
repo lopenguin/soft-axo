@@ -33,7 +33,7 @@ void setup() {
     digitalWrite(LED_BUILTIN, HIGH);
 
     pinMode(BUTTON_PIN, INPUT_PULLUP);
-    while (digitalRead(BUTTON_PIN) == HIGH) {
+    while ((digitalRead(BUTTON_PIN) == HIGH) && !Serial) {
         delay(50);
     }
 
