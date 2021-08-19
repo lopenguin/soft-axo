@@ -135,20 +135,6 @@ bool Axo::addBothQuatToBuf() {
                 // write it!
                 addCharToBuf(c2);
                 flashHasSpace = addCharToBuf(c1);
-
-
-                // // convert to int, then string.
-                // char q_cStr[property::QUAT_NUM_DECIMALS + 2];
-                // itoa(static_cast<int>((quat[i]+1) * pow(10,property::QUAT_NUM_DECIMALS)), q_cStr, 16);
-                //
-                // for (int j{ 0 }; j < (property::QUAT_NUM_DECIMALS); ++j) {
-                //     flashHasSpace = addCharToBuf(q_cStr[j]);
-                // }
-                //
-                // if (i != 3 || !end)
-                //     flashHasSpace = addCharToBuf(',');
-                // else
-                //     flashHasSpace = addCharToBuf('\n');
             }
             return flashHasSpace;
         }

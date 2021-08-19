@@ -4,7 +4,7 @@ import pathlib
 import math
 
 #----------Change these file names to fit-----------------------------------------------
-RAW_DATA_FILE = 'walking.csv'
+RAW_DATA_FILE = 'walkingFast.bin'
 QUATERNION_SAVE_FILE = 'walking_quaternions.csv'
 EULER_SAVE_FILE = 'walking_euler.csv'
 #---------------------------------------------------------------------------------------
@@ -39,41 +39,31 @@ def euler_from_quaternion(q):
 # begin script
 with open(EULER_SAVE_FILE, mode = 'w') as walking_data:
     with open(QUATERNION_SAVE_FILE, mode = 'w') as quaternion_data:
-        with open(RAW_DATA_FILE) as raw_data:
+        with open(RAW_DATA_FILE, mode='rb') as raw_data:
             # just setting up csv reader/writer objects...
             euler_writer = csv.writer(walking_data, delimiter = ',', lineterminator = '\n')
             quaternion_writer = csv.writer(quaternion_data, delimiter = ',', lineterminator = '\n')
-            read_data = csv.reader(raw_data, delimiter = ',')
 
             # simple counters
             line_counter = 0
-            ignored_line_counter = 0
 
-            for row in read_data:
-                quaternion_row = [] # list to hold quaternions (per row)
-                for component in row:
-                    skip = False
-                    # some lines have spaces, just added a double-check if statement
-                    # NOTE: THIS WONT WORK IF HEXADECIMALS START WITH 0x
-                    if (not all(c in string.hexdigits for c in component)):
-                        skip = True
-                        ignored_line_counter += 1
-                        break
-                    decimal = int(component, 16) / 1000.0 - 1
-                    quaternion_row.append(decimal)
-                if skip: # if skip is true, that means the line was somehow invalid for hexadecimals
-                    continue
-                line_counter += 1
-
-                # quaternion writing below: writing two to a row like before
-                quaternion_writer.writerow(list(map(str, quaternion_row)))
-
-                # euler writing below: assumed you had two IMUs -> two quaternions per row
-                euler_writer.writerow(list(map(str, euler_from_quaternion(quaternion_row[0:4]) + euler_from_quaternion(quaternion_row[4:8]))))
+            # read a quaternion pair each time (8 components, 16 bytes)
+            line = raw_data.read(16)
+            while (len(line) != 0):
+                row = []
+                for index in range(0,15,2):
+                    num = (line[index] << 8) | line[index+1]
+                    # convert this num to the quaternion
+                    num = num / 10000
+                    num = round(num - 1, 4)
+                    row.append(num)
+                quaternion_writer.writerow(row)
+                euler_writer.writerow(list(map(str, euler_from_quaternion(row[0:4]) + euler_from_quaternion(row[4:8]))))
+                line = raw_data.read(16)
 
         # output stuff
         print('---')
-        print(f'Processed {line_counter} lines. (Ignored {ignored_line_counter} lines)')
+        print(f'Processed {line_counter} lines.')
         print(f'Saved quaternion data to {pathlib.Path().resolve()}\{QUATERNION_SAVE_FILE}')
         print(f'Saved euler data to {pathlib.Path().resolve()}\{EULER_SAVE_FILE}')
         print('---')
