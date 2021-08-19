@@ -77,8 +77,8 @@ void loop() {
             axo.updatePropIMU();
             axo.printData();
 
-            // 10 second delay before gathering data.
-            if (millis() - startTime > 10000) {
+            // 5 second delay before gathering data.
+            if (millis() - startTime > 5000) {
                 if (!axo.saveData()) {
                     Serial.println("File space exceeded.");
                     digitalWrite(LED_BUILTIN, HIGH);

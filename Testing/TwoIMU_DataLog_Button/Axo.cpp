@@ -16,13 +16,13 @@ Lorenzo Shaikewitz, 8/10/2021
 
 
 const void IMUCarrier::printQuat() const {
-    Serial.print(m_quat[0]);
+    Serial.print(m_quat[0],4);
     Serial.print(',');
-    Serial.print(m_quat[1]);
+    Serial.print(m_quat[1],4);
     Serial.print(',');
-    Serial.print(m_quat[2]);
+    Serial.print(m_quat[2],4);
     Serial.print(',');
-    Serial.print(m_quat[3]);
+    Serial.print(m_quat[3],4);
 }
 
 
@@ -111,18 +111,44 @@ bool Axo::addBothQuatToBuf() {
         [this](const float* quat, bool end) -> bool {
             bool flashHasSpace = 1;
             for (int i{0}; i < 4; ++i) {
-                // convert to int, then string.
-                char q_cStr[property::QUAT_NUM_DECIMALS + 2];
-                itoa(static_cast<int>((quat[i]+1) * pow(10,property::QUAT_NUM_DECIMALS)), q_cStr, 16);
+                // convert from +x.xxxx to (xxxxx + 1 * 10000) > 0
+                // writing is in bytes: 1 character is 1 byte.
+                // range: (0, 20000). 1 byte can store up to 2^8 = 256.
+                // Two bytes can store up to 2^16 = 65536. Let's use two bytes
+                int q = static_cast<int>((quat[i]+1) * pow(10, property::QUAT_NUM_DECIMALS));
+                // Serial.print(q);
+                // Serial.print('\t');
 
-                for (int j{ 0 }; j < (property::QUAT_NUM_DECIMALS); ++j) {
-                    flashHasSpace = addCharToBuf(q_cStr[j]);
+                uint8_t c1, c2;
+
+                if (q - 0xFF <= 0) {
+                    c1 = 0x00;
+                    c2 = q;
+                } else {
+                    c1 = q & 0xFF;
+                    c2 = q >> 8;
                 }
+                // Serial.print(c2);
+                // Serial.print(' ');
+                // Serial.println(c1);
 
-                if (i != 3 || !end)
-                    flashHasSpace = addCharToBuf(',');
-                else
-                    flashHasSpace = addCharToBuf('\n');
+                // write it!
+                addCharToBuf(c2);
+                flashHasSpace = addCharToBuf(c1);
+
+
+                // // convert to int, then string.
+                // char q_cStr[property::QUAT_NUM_DECIMALS + 2];
+                // itoa(static_cast<int>((quat[i]+1) * pow(10,property::QUAT_NUM_DECIMALS)), q_cStr, 16);
+                //
+                // for (int j{ 0 }; j < (property::QUAT_NUM_DECIMALS); ++j) {
+                //     flashHasSpace = addCharToBuf(q_cStr[j]);
+                // }
+                //
+                // if (i != 3 || !end)
+                //     flashHasSpace = addCharToBuf(',');
+                // else
+                //     flashHasSpace = addCharToBuf('\n');
             }
             return flashHasSpace;
         }
