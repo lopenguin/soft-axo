@@ -23,6 +23,7 @@ Lorenzo Shaikewitz, 8/14/2021 TEST!!!!!
 const short BUTTON_PIN{21};
 String FILE_NAME{"testMe"};
 const int runTimeSeconds{60};
+unsigned long startTime{};
 
 Axo axo(runTimeSeconds);
 
@@ -59,16 +60,16 @@ void setup() {
     Serial.print("Saving data to: ");
     Serial.println(axo.getSavefile());
     Serial.println("-----");
+    startTime = millis();
 }
 
-unsigned long startTime{};
+unsigned long lastTime{};
 
-// consider adding 10 second delay to savedata so save has time to make constant.
 void loop() {
     if (axo.propUpdated()) {
         if (axo.adaIMUAvail()) {
-            Serial.println(micros() - startTime);
-            startTime = micros();
+            Serial.println(micros() - lastTime);
+            lastTime = micros();
             axo.updateAdaIMU();
         }
     } else {
@@ -76,11 +77,14 @@ void loop() {
             axo.updatePropIMU();
             axo.printData();
 
-            if (!axo.saveData()) {
-                Serial.println("File space exceeded.");
-                digitalWrite(LED_BUILTIN, HIGH);
-                while (1) {
-                    blink(LED_BUILTIN);
+            // 10 second delay before gathering data.
+            if (millis() - startTime > 10000) {
+                if (!axo.saveData()) {
+                    Serial.println("File space exceeded.");
+                    digitalWrite(LED_BUILTIN, HIGH);
+                    while (1) {
+                        blink(LED_BUILTIN);
+                    }
                 }
             }
         }
