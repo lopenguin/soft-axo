@@ -4,9 +4,11 @@ import pathlib
 import math
 
 #----------Change these file names to fit-----------------------------------------------
-RAW_DATA_FILE = 'isolated_angles/isolatedAngles.bin'
-QUATERNION_SAVE_FILE = 'isolated_angles/isolatedAngles_quaternions.csv'
-EULER_SAVE_FILE = 'isolated_angles/isolatedAngles_euler.csv'
+RAW_DATA_FILE = input("Data file path: ")
+
+# cut off file extension
+QUATERNION_SAVE_FILE = RAW_DATA_FILE[:-4] + "_quaternions.csv"
+EULER_SAVE_FILE = RAW_DATA_FILE[:-4] + "_euler.csv"
 #---------------------------------------------------------------------------------------
 
 # sourced from https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/
