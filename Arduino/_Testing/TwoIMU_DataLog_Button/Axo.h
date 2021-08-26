@@ -43,6 +43,13 @@ public:
     // prints out the quaternion.
     const void printQuat() const;
 
+    // calculates relative quaternion using formula:
+    // R = A^t * B, where R, A, B are rotation matricies
+    // see http://www.songho.ca/opengl/gl_quaternion.html for the transform
+    // and https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+    // to convert back to quats
+    void getRelQuat(IMUCarrier& q2, float* relQuat) const;
+
     NXPMotionSense m_imu;
     NXPSensorFusion m_filter;
 
@@ -81,10 +88,10 @@ public:
     bool propUpdated() { return m_propUpdated; }
     bool adaUpdated() { return !m_propUpdated; }
 
-
     bool saveData();
     // prints most recent data from both IMUs to serial monitor
     void printData();
+    void printRelQuat();
 
     const char* getSavefile() const { return m_savefile; }
 

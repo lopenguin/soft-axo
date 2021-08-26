@@ -26,6 +26,102 @@ const void IMUCarrier::printQuat() const {
 }
 
 
+void IMUCarrier::getRelQuat(IMUCarrier& q2, float* relQuat) const {
+    // convert both quaternions into rotation matricies
+    struct Matrix {
+        float i11, i12, i13;
+        float i21, i22, i23;
+        float i31, i32, i33;
+    };
+    // this one is transposed
+    Matrix m1{};
+    {
+        float w = this->m_quat[0];
+        float x = this->m_quat[1];
+        float y = this->m_quat[2];
+        float z = this->m_quat[3];
+
+        m1.i11 = 1 - 2*y*y - 2*z*z;
+        m1.i21 = 2*x*y - 2*w*z;
+        m1.i31 = 2*x*z + 2*w*y;
+
+        m1.i12 = 2*x*y + 2*w*z;
+        m1.i22 = 1 - 2*x*x - 2*z*z;
+        m1.i32 = 2*y*z - 2*w*x;
+
+        m1.i13 = 2*x*z - 2*w*y;
+        m1.i23 = 2*y*z + 2*w*x;
+        m1.i33 = 1 - 2*x*x - 2*y*y;
+    }
+    // this one is normal
+    Matrix m2{};
+    {
+        float w = q2.m_quat[0];
+        float x = q2.m_quat[1];
+        float y = q2.m_quat[2];
+        float z = q2.m_quat[3];
+
+        m2.i11 = 1 - 2*y*y - 2*z*z;
+        m2.i12 = 2*x*y - 2*w*z;
+        m2.i13 = 2*x*z + 2*w*y;
+
+        m2.i21 = 2*x*y + 2*w*z;
+        m2.i22 = 1 - 2*x*x - 2*z*z;
+        m2.i23 = 2*y*z - 2*w*x;
+
+        m2.i31 = 2*x*z - 2*w*y;
+        m2.i32 = 2*y*z + 2*w*x;
+        m2.i33 = 1 - 2*x*x - 2*y*y;
+    }
+
+    // multiply the two matricies
+    Matrix rel{};
+    rel.i11 = m1.i11*m2.i11 + m1.i12*m2.i21 + m1.i13*m2.i31;
+    rel.i12 = m1.i11*m2.i12 + m1.i12*m2.i22 + m1.i13*m2.i32;
+    rel.i13 = m1.i11*m2.i13 + m1.i12*m2.i23 + m1.i13*m2.i33;
+
+    rel.i21 = m1.i21*m2.i11 + m1.i22*m2.i21 + m1.i23*m2.i31;
+    rel.i22 = m1.i21*m2.i12 + m1.i22*m2.i22 + m1.i23*m2.i32;
+    rel.i23 = m1.i21*m2.i13 + m1.i22*m2.i23 + m1.i23*m2.i33;
+
+    rel.i31 = m1.i31*m2.i11 + m1.i32*m2.i21 + m1.i33*m2.i31;
+    rel.i32 = m1.i31*m2.i12 + m1.i32*m2.i22 + m1.i33*m2.i32;
+    rel.i33 = m1.i31*m2.i13 + m1.i32*m2.i23 + m1.i33*m2.i33;
+
+
+    // convert rel back to a quat (oh boy)
+    float trace = rel.i11 + rel.i22 + rel.i33;
+    if (trace > 0) {
+        float s = 0.5f / sqrtf(trace + 1.0f);
+        relQuat[0] = 0.25f / s;
+        relQuat[1] = (rel.i32 - rel.i23) * s;
+        relQuat[2] = (rel.i13 - rel.i31) * s;
+        relQuat[3] = (rel.i21 - rel.i12) * s;
+    } else {
+        if (rel.i11 > rel.i22 && rel.i11 > rel.i33) {
+            float s = 2.0f * sqrtf(1.0f + rel.i11 - rel.i22 - rel.i33);
+            relQuat[0] = (rel.i32 - rel.i23) / s;
+            relQuat[1] = 0.25f * s;
+            relQuat[2] = (rel.i12 + rel.i21) / s;
+            relQuat[3] = (rel.i13 + rel.i31) / s;
+        } else if (rel.i22 > rel.i33) {
+            float s = 2.0f * sqrtf(1.0f + rel.i22 - rel.i11 - rel.i33);
+            relQuat[0] = (rel.i13 - rel.i31) / s;
+            relQuat[1] = (rel.i12 + rel.i21) / s;
+            relQuat[2] = 0.25f * s;
+            relQuat[3] = (rel.i23 + rel.i32) / s;
+        } else {
+            float s = 2.0f * sqrtf(1.0f + rel.i33 - rel.i11 - rel.i22);
+            relQuat[0] = (rel.i21 - rel.i12) / s;
+            relQuat[1] = (rel.i13 + rel.i31) / s;
+            relQuat[2] = (rel.i23 + rel.i32) / s;
+            relQuat[3] = 0.25f * s;
+        }
+    }
+}
+
+
+
 Message Axo::begin(String filename) {
     if (filename.length() > (property::FILENAME_MAX_LEN + 2)) {
         return Message::FILE_TOO_LONG;
@@ -88,12 +184,28 @@ bool Axo::saveData() {
 
 
 void Axo::printData() {
-    Serial.print("Prop: ");
-    m_imuProp.printQuat();
-    Serial.print('\t');
-    Serial.print("Ada: ");
-    m_imuAda.printQuat();
-    Serial.print('\n');
+    // Serial.print("Prop: ");
+    // m_imuProp.printQuat();
+    // Serial.print('\t');
+    // Serial.print("Ada: ");
+    // m_imuAda.printQuat();
+    // Serial.print('\n');
+}
+
+
+void Axo::printRelQuat() {
+    float relQuat[4]{};
+    m_imuProp.getRelQuat(m_imuAda, relQuat);
+
+    // Serial.print("Rel: ");
+    // Serial.print(relQuat[0]);
+    // Serial.print(',');
+    // Serial.print(relQuat[1]);
+    // Serial.print(',');
+    // Serial.print(relQuat[2]);
+    // Serial.print(',');
+    // Serial.print(relQuat[3]);
+    // Serial.print('\n');
 }
 
 
