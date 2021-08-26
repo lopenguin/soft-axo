@@ -71,7 +71,7 @@ public:
     // defaults to passive, 5 minute recording time
     Axo(int runTimeSeconds = 300, bool useMotors = false) :
         m_useMotors{useMotors},
-        m_fileSize{timeToFileSize(runTimeSeconds, 2)},
+        m_fileSize{timeToFileSize(runTimeSeconds, property::NUM_QUATS)},
         m_imuProp(FXOS8700_I2C_ADDR0, FXAS21002_I2C_ADDR0),
         m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1)
     { /*Does nothing*/ }
@@ -98,7 +98,7 @@ public:
 
 private:
     bool addBothQuatToBuf();
-    // TODO: addRelQuatToBuf();
+    bool addRelQuatToBuf();
     bool addCharToBuf(char c);  // does buf size checking, calls saveFromBuf if buf full
     bool saveFromBuf();
 
@@ -115,6 +115,7 @@ private:
 
     IMUCarrier m_imuProp;
     IMUCarrier m_imuAda;
+    float m_relQuat[4]{};
 };
 
 #endif

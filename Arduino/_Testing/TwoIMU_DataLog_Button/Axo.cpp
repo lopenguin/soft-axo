@@ -174,7 +174,8 @@ void Axo::updatePropIMU() {
 
 
 bool Axo::saveData() {
-    bool flashHasSpace = addBothQuatToBuf();
+    // bool flashHasSpace = addBothQuatToBuf();
+    bool flashHasSpace = addRelQuatToBuf();
     if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
         flashHasSpace = saveFromBuf();
         m_quatBufIndex = 0;
@@ -194,18 +195,15 @@ void Axo::printData() {
 
 
 void Axo::printRelQuat() {
-    float relQuat[4]{};
-    m_imuProp.getRelQuat(m_imuAda, relQuat);
-
-    // Serial.print("Rel: ");
-    // Serial.print(relQuat[0]);
-    // Serial.print(',');
-    // Serial.print(relQuat[1]);
-    // Serial.print(',');
-    // Serial.print(relQuat[2]);
-    // Serial.print(',');
-    // Serial.print(relQuat[3]);
-    // Serial.print('\n');
+    Serial.print("Rel: ");
+    Serial.print(m_relQuat[0]);
+    Serial.print(',');
+    Serial.print(m_relQuat[1]);
+    Serial.print(',');
+    Serial.print(m_relQuat[2]);
+    Serial.print(',');
+    Serial.print(m_relQuat[3]);
+    Serial.print('\n');
 }
 
 
@@ -220,7 +218,7 @@ bool Axo::addBothQuatToBuf() {
 
     // lambda to do the saving.
     auto saveQuat{
-        [this](const float* quat, bool end) -> bool {
+        [this](const float* quat) -> bool {
             bool flashHasSpace = 1;
             for (int i{0}; i < 4; ++i) {
                 // convert from +x.xxxx to (xxxxx + 1 * 10000) > 0
@@ -255,7 +253,42 @@ bool Axo::addBothQuatToBuf() {
     const float* quatProp = m_imuProp.getQuat();
     const float* quatAda = m_imuAda.getQuat();
 
-    return saveQuat(quatProp, 0) && saveQuat(quatAda, 1);
+    return saveQuat(quatProp) && saveQuat(quatAda);
+}
+
+
+bool Axo::addRelQuatToBuf() {
+    // save in binary
+    m_imuProp.getRelQuat(m_imuAda, m_relQuat);
+
+    bool flashHasSpace = 1;
+    for (int i{0}; i < 4; ++i) {
+        // convert from +x.xxxx to (xxxxx + 1 * 10000) > 0
+        // writing is in bytes: 1 character is 1 byte.
+        // range: (0, 20000). 1 byte can store up to 2^8 = 256.
+        // Two bytes can store up to 2^16 = 65536. Let's use two bytes
+        int q = static_cast<int>((m_relQuat[i]+1) * pow(10, property::QUAT_NUM_DECIMALS));
+        // Serial.print(q);
+        // Serial.print('\t');
+
+        uint8_t c1, c2;
+
+        if (q - 0xFF <= 0) {
+            c1 = 0x00;
+            c2 = q;
+        } else {
+            c1 = q & 0xFF;
+            c2 = q >> 8;
+        }
+        // Serial.print(c2);
+        // Serial.print(' ');
+        // Serial.println(c1);
+
+        // write it!
+        addCharToBuf(c2);
+        flashHasSpace = addCharToBuf(c1);
+    }
+    return flashHasSpace;
 }
 
 

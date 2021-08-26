@@ -60,7 +60,7 @@ void setup() {
     Serial.print("Saving data to: ");
     Serial.println(axo.getSavefile());
     Serial.println("-----");
-    startTime = millis();
+    startTime = micros();
 }
 
 unsigned long lastTime{};
@@ -68,6 +68,7 @@ unsigned long lastTime{};
 void loop() {
     if (axo.propUpdated()) {
         if (axo.adaIMUAvail()) {
+            // pretty consistently get ~10250 us per sample!
             Serial.println(micros() - lastTime);
             lastTime = micros();
             axo.updateAdaIMU();
@@ -76,15 +77,23 @@ void loop() {
         if (axo.propIMUAvail()) {
             axo.updatePropIMU();
             // axo.printData();
+            unsigned long currentTime{micros()};
+            if (currentTime - lastTime > 10000) {
+                // it's like there's an optimal delay here - not sure why
+                // or how to get it, but this combo works.
 
-            axo.printRelQuat();
-
-            // why is this function needed? Who knows?
-            // axo.jumpInALake();
-            delayMicroseconds(1);
-
-            // // 5 second delay before gathering data.
-            if (millis() - startTime > 5000) {
+                delayMicroseconds(300);
+                // check time since start just to be sure we are always saving data
+                if (currentTime - startTime > 5000000) {
+                    if (!axo.saveData()) {
+                        Serial.println("File space exceeded.");
+                        digitalWrite(LED_BUILTIN, HIGH);
+                        while (1) {
+                            blink(LED_BUILTIN);
+                        }
+                    }
+                }
+            } else {
                 if (!axo.saveData()) {
                     Serial.println("File space exceeded.");
                     digitalWrite(LED_BUILTIN, HIGH);
@@ -92,6 +101,7 @@ void loop() {
                         blink(LED_BUILTIN);
                     }
                 }
+                Serial.println("saving...");
             }
         }
     }

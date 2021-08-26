@@ -10,9 +10,9 @@ namespace property {
     constexpr unsigned int FLASH_MAX_PAGES{32768};
     constexpr int FLASH_PAGE_SIZE{256};
     constexpr int QUAT_NUM_DECIMALS{4};
-    // total write size per quat (each digit represented by 1 byte)
-    constexpr int QUAT_DATA_SIZE{(QUAT_NUM_DECIMALS+1)*2};   // total write size per quat
+    constexpr int QUAT_DATA_SIZE{(QUAT_NUM_DECIMALS+1)*2};   // each digit represented by 1 byte
     constexpr int IMU_UPDATE_HZ{100};
+    constexpr int NUM_QUATS{1};
 
     constexpr int FILENAME_MAX_LEN{10};
 }
