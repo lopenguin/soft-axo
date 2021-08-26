@@ -184,12 +184,12 @@ bool Axo::saveData() {
 
 
 void Axo::printData() {
-    // Serial.print("Prop: ");
-    // m_imuProp.printQuat();
-    // Serial.print('\t');
-    // Serial.print("Ada: ");
-    // m_imuAda.printQuat();
-    // Serial.print('\n');
+    Serial.print("Prop: ");
+    m_imuProp.printQuat();
+    Serial.print('\t');
+    Serial.print("Ada: ");
+    m_imuAda.printQuat();
+    Serial.print('\n');
 }
 
 

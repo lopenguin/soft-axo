@@ -76,18 +76,23 @@ void loop() {
         if (axo.propIMUAvail()) {
             axo.updatePropIMU();
             // axo.printData();
+
             axo.printRelQuat();
 
+            // why is this function needed? Who knows?
+            // axo.jumpInALake();
+            delayMicroseconds(1);
+
             // // 5 second delay before gathering data.
-            // if (millis() - startTime > 5000) {
-            //     if (!axo.saveData()) {
-            //         Serial.println("File space exceeded.");
-            //         digitalWrite(LED_BUILTIN, HIGH);
-            //         while (1) {
-            //             blink(LED_BUILTIN);
-            //         }
-            //     }
-            // }
+            if (millis() - startTime > 5000) {
+                if (!axo.saveData()) {
+                    Serial.println("File space exceeded.");
+                    digitalWrite(LED_BUILTIN, HIGH);
+                    while (1) {
+                        blink(LED_BUILTIN);
+                    }
+                }
+            }
         }
     }
 }
