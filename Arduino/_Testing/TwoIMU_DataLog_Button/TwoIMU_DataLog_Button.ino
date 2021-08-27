@@ -102,6 +102,8 @@ void loop() {
                     }
                 }
                 Serial.println("saving...");
+                // axo.printData();
+                // axo.printRelQuat();
             }
         }
     }
