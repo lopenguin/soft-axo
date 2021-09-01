@@ -49,6 +49,7 @@ public:
     void getRelQuatWithRotMatrix(IMUCarrier& q2, float* relQuat) const;
 
     // well. Math suggests quaternion left multiplication does same thing!
+    // note: may be unsave to use. Sometimes causes random, unexplainable stop.
     void getRelQuat(IMUCarrier& q2, float* relQuat) const;
 
     NXPMotionSense m_imu;

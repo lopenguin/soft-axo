@@ -69,7 +69,7 @@ void loop() {
     if (axo.propUpdated()) {
         if (axo.adaIMUAvail()) {
             // pretty consistently get ~10250 us per sample!
-            Serial.println(micros() - lastTime);
+            // Serial.println(micros() - lastTime);
             lastTime = micros();
             axo.updateAdaIMU();
         }
@@ -101,7 +101,7 @@ void loop() {
                         blink(LED_BUILTIN);
                     }
                 }
-                Serial.println("saving...");
+                // Serial.println("saving...");
                 // axo.printData();
                 // axo.printRelQuat();
             }

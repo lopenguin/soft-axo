@@ -49,20 +49,20 @@ with open(EULER_SAVE_FILE, mode = 'w') as walking_data:
             # simple counters
             line_counter = 0
 
-            # read a quaternion pair each time (8 components, 16 bytes)
-            line = raw_data.read(16)
+            # read a quaternion each time (4 components, 8 bytes)
+            line = raw_data.read(8)
             while (len(line) != 0):
                 row = []
                 line_counter = line_counter + 1
-                for index in range(0,15,2):
+                for index in range(0,7,2):
                     num = (line[index] << 8) | line[index+1]
                     # convert this num to the quaternion
                     num = num / 10000
                     num = round(num - 1, 4)
                     row.append(num)
                 quaternion_writer.writerow(row)
-                euler_writer.writerow(list(map(str, euler_from_quaternion(row[0:4]) + euler_from_quaternion(row[4:8]))))
-                line = raw_data.read(16)
+                euler_writer.writerow(list(map(str, euler_from_quaternion(row[0:4]))))
+                line = raw_data.read(8)
 
         # output stuff
         print('---')
