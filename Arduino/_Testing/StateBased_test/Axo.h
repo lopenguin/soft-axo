@@ -52,8 +52,14 @@ public:
 
     const char* getSavefile() const { return m_savefile; }
 
+    // For use with motor
+    void abort();
+    void writeMotor(int speed, bool coast = false);
+    void updateState(float percentSince);
 
 private:
+    void rampDown();
+
     bool addBothQuatToBuf();
     bool addRelQuatToBuf();
     bool addCharToBuf(char c);  // does buf size checking, calls saveFromBuf if buf full
@@ -72,7 +78,11 @@ private:
 
     IMUCarrier m_imuProp;
     IMUCarrier m_imuAda;
+
+    float m_lastRelQuat[4]{};
     float m_relQuat[4]{};
+
+    float m_statePermil{};
 };
 
 #endif

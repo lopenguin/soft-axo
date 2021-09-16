@@ -22,13 +22,14 @@ Lorenzo Shaikewitz, 9/15/2021
 String FILE_NAME{"walk"};
 const int runTimeSeconds{60};
 
+float startPermil{500};
+float endPermil{800};
 
 // timekeeping
 unsigned long startTime{};
-float gaitPercent{ 0 };
 
-// function declaration
-void writeMotor(int speed, bool coast = false);
+
+Axo axo(runTimeSeconds);
 
 
 void setup() {
@@ -117,7 +118,7 @@ void loop() {
 
 
             // work with the relative quaternion
-            axo.
+            axo.updateState();
 
         }
     }
@@ -129,4 +130,8 @@ void blink(int pin) {
     delay(1000);
     digitalWrite(pin, LOW);
     delay(1000);
+}
+
+void abort() {
+    axo.abort();
 }

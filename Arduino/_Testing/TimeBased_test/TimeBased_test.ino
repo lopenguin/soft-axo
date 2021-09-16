@@ -50,6 +50,9 @@ void setup() {
 
     startTime_us = micros();
     digitalWrite(pin::MOTOR_EN, HIGH);
+
+    writeMotor(255);
+    while (1);
 }
 
 void loop() {
