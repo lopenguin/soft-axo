@@ -3,6 +3,7 @@ Data logging of dual IMU setup. Designed for use on passive ankle exo.
 
 - Triggers on button press (see below)
 - Full Axo class implementation (no motor usage)
+- Saves BOTH quaternions to a log, not just relative quaternion.
 
 Lorenzo Shaikewitz, 8/18/2021
 */

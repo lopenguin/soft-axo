@@ -6,7 +6,7 @@ That means:
 - Both IMUs should output data
 - this is experimental code.
 
-Lorenzo Shaikewitz, 8/14/2021 TEST!!!!!
+Lorenzo Shaikewitz, 8/14/2021
 */
 
 #include <NXPMotionSense_Lorenzo.h>

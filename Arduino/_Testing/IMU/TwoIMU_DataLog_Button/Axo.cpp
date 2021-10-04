@@ -67,8 +67,9 @@ void Axo::updatePropIMU() {
 }
 
 
-bool Axo::saveData() {
+bool Axo::saveData(unsigned long timeDif) {
     // bool flashHasSpace = addBothQuatToBuf();
+    bool flashHasSpace = addTimeToBuf(timeDif);
     bool flashHasSpace = addRelQuatToBuf();
     if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
         flashHasSpace = saveFromBuf();
@@ -98,6 +99,19 @@ void Axo::printRelQuat() {
     Serial.print(',');
     Serial.print(m_relQuat[3]);
     Serial.print('\n');
+}
+
+
+bool Axo::addTimeToBuf(unsigned long t) {
+    // time comes in microseconds, convert to millis * 10 and use 8 bit.
+    uint8_t timeDif{};
+    if (t*100 > 255) {
+        timeDif = 255;
+    } else {
+        timeDif = static_cast<uint8_t>(t*100);
+    }
+    flashHasSpace = addCharToBuf(timeDif);
+    return flashHasSpace;
 }
 
 
@@ -160,7 +174,7 @@ bool Axo::addRelQuatToBuf() {
         // convert from +x.xxxx to (xxxxx + 1 * 10000) > 0
         // writing is in bytes: 1 character is 1 byte.
         // range: (0, 20000). 1 byte can store up to 2^8 = 256.
-        // Two bytes can store up to 2^16 = 65536. Let's use two bytes
+        // Two bytes can store up to 2^16 = 65536. Let's use two bytes per number.
         int q = static_cast<int>((m_relQuat[i]+1) * pow(10, property::QUAT_NUM_DECIMALS));
         // Serial.print(q);
         // Serial.print('\t');

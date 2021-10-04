@@ -45,7 +45,7 @@ public:
     bool propUpdated() { return m_propUpdated; }
     bool adaUpdated() { return !m_propUpdated; }
 
-    bool saveData();
+    bool saveData(unsigned long timeDif);
     // prints most recent data from both IMUs to serial monitor
     void printData();
     void printRelQuat();
