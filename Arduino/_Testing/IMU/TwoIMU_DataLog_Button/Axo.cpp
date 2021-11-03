@@ -70,7 +70,7 @@ void Axo::updatePropIMU() {
 bool Axo::saveData(unsigned long timeDif) {
     // bool flashHasSpace = addBothQuatToBuf();
     bool flashHasSpace = addTimeToBuf(timeDif);
-    bool flashHasSpace = addRelQuatToBuf();
+    flashHasSpace = flashHasSpace && addRelQuatToBuf();
     if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
         flashHasSpace = saveFromBuf();
         m_quatBufIndex = 0;
@@ -105,12 +105,12 @@ void Axo::printRelQuat() {
 bool Axo::addTimeToBuf(unsigned long t) {
     // time comes in microseconds, convert to millis * 10 and use 8 bit.
     uint8_t timeDif{};
-    if (t*100 > 255) {
+    if (t/100 > 255) {
         timeDif = 255;
     } else {
-        timeDif = static_cast<uint8_t>(t*100);
+        timeDif = static_cast<uint8_t>(t/100);
     }
-    flashHasSpace = addCharToBuf(timeDif);
+    bool flashHasSpace = addCharToBuf(timeDif);
     return flashHasSpace;
 }
 

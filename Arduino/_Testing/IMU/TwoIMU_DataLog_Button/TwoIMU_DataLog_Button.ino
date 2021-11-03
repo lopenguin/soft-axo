@@ -57,6 +57,8 @@ void setup() {
             break;
     }
 
+    // startup procedure
+
     Serial.print("Saving data to: ");
     Serial.println(axo.getSavefile());
     Serial.println("-----");
@@ -64,6 +66,7 @@ void setup() {
 }
 
 unsigned long lastTime{};
+unsigned long lastIMUSaveTime{};
 
 void loop() {
     if (axo.propUpdated()) {
@@ -83,24 +86,17 @@ void loop() {
                 // or how to get it, but this combo works.
 
                 delayMicroseconds(300);
-                // check time since start just to be sure we are always saving data
-                if (currentTime - startTime > 5000000) {
-                    if (!axo.saveData()) {
-                        Serial.println("File space exceeded.");
-                        digitalWrite(LED_BUILTIN, HIGH);
-                        while (1) {
-                            blink(LED_BUILTIN);
-                        }
-                    }
-                }
-            } else {
-                if (!axo.saveData()) {
+            }
+            // wait 5 seconds to start saving data
+            if (currentTime - startTime > 5000000) {
+                if (!axo.saveData(currentTime - lastIMUSaveTime)) {
                     Serial.println("File space exceeded.");
                     digitalWrite(LED_BUILTIN, HIGH);
                     while (1) {
                         blink(LED_BUILTIN);
                     }
                 }
+                lastIMUSaveTime = micros();
                 // Serial.println("saving...");
                 // axo.printData();
                 // axo.printRelQuat();

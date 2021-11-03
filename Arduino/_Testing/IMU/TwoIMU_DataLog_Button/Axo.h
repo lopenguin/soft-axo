@@ -58,6 +58,7 @@ private:
     bool addRelQuatToBuf();
     bool addCharToBuf(char c);  // does buf size checking, calls saveFromBuf if buf full
     bool saveFromBuf();
+    bool addTimeToBuf(unsigned long t);
 
     int timeToFileSize(int runTimeSeconds, int numQuats = 2); // UNTESTED!!
 

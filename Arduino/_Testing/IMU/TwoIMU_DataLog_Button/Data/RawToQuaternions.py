@@ -64,8 +64,8 @@ with open(EULER_SAVE_FILE, mode = 'w') as walking_data:
                 row = []
                 line_counter = line_counter + 1
                 # times
-                row.append(float(line[0] - lastTime)/10)); # convert to milliseconds
-                lastTime = line[0];
+                row.append(float(line[0])/10 + lastTime); # convert to milliseconds
+                lastTime = row[0];
 
                 # quaternions
                 for index in range(1,8,2):
@@ -75,8 +75,9 @@ with open(EULER_SAVE_FILE, mode = 'w') as walking_data:
                     num = round(num - 1, 4)
                     row.append(num)
                 quaternion_writer.writerow(row)
-                euler_writer.writerow(list(map(str, euler_from_quaternion(row[0:4]))))
-                line = raw_data.read(8)
+                euler_list = list(map(str, euler_from_quaternion(row[1:5])))
+                euler_writer.writerow([row[0], euler_list[0], euler_list[1], euler_list[2]])
+                line = raw_data.read(9)
 
         # output stuff
         print('---')
