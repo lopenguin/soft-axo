@@ -16,14 +16,21 @@ Lorenzo Shaikewitz, 8/10/2021
 #include <SPI.h>
 
 
-Message Axo::begin(String filename) {
-    if (filename.length() > (property::FILENAME_MAX_LEN + 2)) {
-        return Message::FILE_TOO_LONG;
-    }
-
+void Axo::begin() {
+    // just sets up IMUs and motors
     // IMU setup
     m_imuProp.begin();
     m_imuAda.begin();
+
+    // if (useMotors) {
+    //     // Motor setup (not yet implemented)
+    // }
+}
+
+Message Axo::beginFlash(String filename) {
+    if (filename.length() > (property::FILENAME_MAX_LEN + 2)) {
+        return Message::FILE_TOO_LONG;
+    }
 
     // flash setup
     if (!SerialFlash.begin(pin::FLASH_CS)) {
@@ -48,10 +55,6 @@ Message Axo::begin(String filename) {
         return Message::NO_FLASH_SPACE;
     }
 
-    // if (useMotors) {
-    //     // Motor setup (not yet implemented)
-    // }
-
     return Message::OK;
 }
 
@@ -64,6 +67,14 @@ void Axo::updateAdaIMU() {
 void Axo::updatePropIMU() {
     m_propUpdated = 1;
     m_imuProp.update();
+}
+
+
+bool Axo::started() {
+    if (m_imuProp.getAz() > property::STARTUP_ACCEL_THRESH) {
+        return true;
+    }
+    return false;
 }
 
 

@@ -33,8 +33,11 @@ public:
         m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1)
     { /*Does nothing*/ }
 
+    // starts up IMU and motors but not flash file.
+    void begin();
+
     // filename must be < 7 characters. No extension needed.
-    Message begin(String filename = "data_");
+    Message beginFlash(String filename = "data_");
 
     bool propIMUAvail() { return m_imuProp.available(); }
     bool adaIMUAvail() { return m_imuAda.available(); }
@@ -44,6 +47,9 @@ public:
     void updatePropIMU();
     bool propUpdated() { return m_propUpdated; }
     bool adaUpdated() { return !m_propUpdated; }
+
+    // startup
+    bool started();
 
     bool saveData(unsigned long timeDif);
     // prints most recent data from both IMUs to serial monitor

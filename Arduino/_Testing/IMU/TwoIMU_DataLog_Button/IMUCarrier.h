@@ -36,6 +36,8 @@ public:
         m_filter.getQuaternion(m_quat);
     }
 
+    const float getAz() const { return m_az; }
+
     const float* getQuat() const { return m_quat; }
 
     // prints out the quaternion.
@@ -49,7 +51,6 @@ public:
     void getRelQuatWithRotMatrix(IMUCarrier& q2, float* relQuat) const;
 
     // well. Math suggests quaternion left multiplication does same thing!
-    // note: may be unsave to use. Sometimes causes random, unexplainable stop.
     void getRelQuat(IMUCarrier& q2, float* relQuat) const;
 
     NXPMotionSense m_imu;

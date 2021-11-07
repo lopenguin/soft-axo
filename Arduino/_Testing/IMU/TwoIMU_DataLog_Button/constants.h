@@ -15,6 +15,8 @@ namespace property {
     constexpr int NUM_QUATS{1};
 
     constexpr int FILENAME_MAX_LEN{10};
+
+    constexpr int STARTUP_ACCEL_THRESH{2};
 }
 
 namespace pin {
