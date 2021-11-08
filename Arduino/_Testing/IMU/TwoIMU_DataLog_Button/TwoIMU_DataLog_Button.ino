@@ -20,7 +20,7 @@ Lorenzo Shaikewitz, 8/14/2021
 #include "Axo.h"
 #include "constants.h"
 
-String FILE_NAME{"testMe"};
+String FILE_NAME{"t"};
 const int runTimeSeconds{60};
 unsigned long startTime{};
 
@@ -95,7 +95,7 @@ void loop() {
             if (currentTime - startTime > 5000000) {
                 if (!axo.saveData(currentTime - lastIMUSaveTime)) {
                     Serial.println("File space exceeded.");
-                    digitalWrite(LED_BUILTIN, HIGH);
+                    pinMode(LED_BUILTIN, OUTPUT);
                     while (1) {
                         blink(LED_BUILTIN);
                     }
