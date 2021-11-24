@@ -16,7 +16,7 @@ namespace property {
 
     constexpr int FILENAME_MAX_LEN{10};
 
-    constexpr int STARTUP_ACCEL_THRESH{1.5};
+    constexpr float STARTUP_ACCEL_THRESH{1.5};
 }
 
 namespace pin {

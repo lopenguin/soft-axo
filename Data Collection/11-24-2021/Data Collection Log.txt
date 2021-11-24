@@ -1,0 +1,21 @@
+11/24/2021
+Passive Ankle Exoskeleton Tests
+
+Testing occured on lab treadmill.
+Parameters:
+- walking
+- IMU height: 15" (R), 15.5" (L)
+
+TEST 00: 1.2 m/s, 5 minutes
+- t00_L: data looks good, some drift
+- t00_R: failed :(
+
+
+TEST 01: 1.2 m/s, 5 minutes (repeat of 00)
+- 
+
+
+TEST 02: 2 m/s, 5 minutes
+-
+
+TEST 03: 1.2 m/s, 5 minutes, with 2 springs on each leg (9.03 N/cm constant each spring) 

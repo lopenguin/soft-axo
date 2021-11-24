@@ -21,7 +21,7 @@ Lorenzo Shaikewitz, 8/14/2021
 #include "constants.h"
 
 String FILE_NAME{"t"};
-const int runTimeSeconds{60};
+const int runTimeSeconds{300};
 unsigned long startTime{};
 
 Axo axo(runTimeSeconds);
@@ -111,7 +111,7 @@ void loop() {
 
 void blink(int pin) {
     digitalWrite(pin, HIGH);
-    delay(1000);
+    delay(500);
     digitalWrite(pin, LOW);
-    delay(1000);
+    delay(500);
 }
