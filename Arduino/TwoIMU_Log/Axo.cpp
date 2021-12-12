@@ -2,6 +2,7 @@
 
 Lorenzo Shaikewitz, 8/10/2021
 */
+#include "IMUCarrier.h"
 #include "Axo.h"
 #include "constants.h"
 
@@ -15,25 +16,21 @@ Lorenzo Shaikewitz, 8/10/2021
 #include <SPI.h>
 
 
-const void IMUCarrier::printQuat() const {
-    Serial.print(m_quat[0],4);
-    Serial.print(',');
-    Serial.print(m_quat[1],4);
-    Serial.print(',');
-    Serial.print(m_quat[2],4);
-    Serial.print(',');
-    Serial.print(m_quat[3],4);
-}
-
-
-Message Axo::begin(String filename) {
-    if (filename.length() > (property::FILENAME_MAX_LEN + 2)) {
-        return Message::FILE_TOO_LONG;
-    }
-
+void Axo::begin() {
+    // just sets up IMUs and motors
     // IMU setup
     m_imuProp.begin();
     m_imuAda.begin();
+
+    // if (useMotors) {
+    //     // Motor setup (not yet implemented)
+    // }
+}
+
+Message Axo::beginFlash(String filename) {
+    if (filename.length() > (property::FILENAME_MAX_LEN + 2)) {
+        return Message::FILE_TOO_LONG;
+    }
 
     // flash setup
     if (!SerialFlash.begin(pin::FLASH_CS)) {
@@ -58,10 +55,6 @@ Message Axo::begin(String filename) {
         return Message::NO_FLASH_SPACE;
     }
 
-    // if (useMotors) {
-    //     // Motor setup (not yet implemented)
-    // }
-
     return Message::OK;
 }
 
@@ -77,8 +70,18 @@ void Axo::updatePropIMU() {
 }
 
 
-bool Axo::saveData() {
-    bool flashHasSpace = addBothQuatToBuf();
+bool Axo::started() {
+    if (m_imuProp.getAz() > property::STARTUP_ACCEL_THRESH) {
+        return true;
+    }
+    return false;
+}
+
+
+bool Axo::saveData(unsigned long timeDif) {
+    // bool flashHasSpace = addBothQuatToBuf();
+    bool flashHasSpace = addTimeToBuf(timeDif);
+    flashHasSpace = flashHasSpace && addRelQuatToBuf();
     if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
         flashHasSpace = saveFromBuf();
         m_quatBufIndex = 0;
@@ -97,6 +100,32 @@ void Axo::printData() {
 }
 
 
+void Axo::printRelQuat() {
+    Serial.print("Rel: ");
+    Serial.print(m_relQuat[0]);
+    Serial.print(',');
+    Serial.print(m_relQuat[1]);
+    Serial.print(',');
+    Serial.print(m_relQuat[2]);
+    Serial.print(',');
+    Serial.print(m_relQuat[3]);
+    Serial.print('\n');
+}
+
+
+bool Axo::addTimeToBuf(unsigned long t) {
+    // time comes in microseconds, convert to millis * 10 and use 8 bit.
+    uint8_t timeDif{};
+    if (t/100 > 255) {
+        timeDif = 255;
+    } else {
+        timeDif = static_cast<uint8_t>(t/100);
+    }
+    bool flashHasSpace = addCharToBuf(timeDif);
+    return flashHasSpace;
+}
+
+
 bool Axo::addBothQuatToBuf() {
     // each quat is 6 chars: +x.xxx (x4) without any formatting
     // formatting: +1 (always positive), drop decimal.
@@ -108,7 +137,7 @@ bool Axo::addBothQuatToBuf() {
 
     // lambda to do the saving.
     auto saveQuat{
-        [this](const float* quat, bool end) -> bool {
+        [this](const float* quat) -> bool {
             bool flashHasSpace = 1;
             for (int i{0}; i < 4; ++i) {
                 // convert from +x.xxxx to (xxxxx + 1 * 10000) > 0
@@ -143,7 +172,42 @@ bool Axo::addBothQuatToBuf() {
     const float* quatProp = m_imuProp.getQuat();
     const float* quatAda = m_imuAda.getQuat();
 
-    return saveQuat(quatProp, 0) && saveQuat(quatAda, 1);
+    return saveQuat(quatProp) && saveQuat(quatAda);
+}
+
+
+bool Axo::addRelQuatToBuf() {
+    // save in binary
+    m_imuProp.getRelQuat(m_imuAda, m_relQuat);
+
+    bool flashHasSpace = 1;
+    for (int i{0}; i < 4; ++i) {
+        // convert from +x.xxxx to (xxxxx + 1 * 10000) > 0
+        // writing is in bytes: 1 character is 1 byte.
+        // range: (0, 20000). 1 byte can store up to 2^8 = 256.
+        // Two bytes can store up to 2^16 = 65536. Let's use two bytes per number.
+        int q = static_cast<int>((m_relQuat[i]+1) * pow(10, property::QUAT_NUM_DECIMALS));
+        // Serial.print(q);
+        // Serial.print('\t');
+
+        uint8_t c1, c2;
+
+        if (q - 0xFF <= 0) {
+            c1 = 0x00;
+            c2 = q;
+        } else {
+            c1 = q & 0xFF;
+            c2 = q >> 8;
+        }
+        // Serial.print(c2);
+        // Serial.print(' ');
+        // Serial.println(c1);
+
+        // write it!
+        addCharToBuf(c2);
+        flashHasSpace = addCharToBuf(c1);
+    }
+    return flashHasSpace;
 }
 
 
@@ -180,7 +244,7 @@ bool Axo::saveFromBuf() {
 
 int Axo::timeToFileSize(int runTimeSeconds, int numQuats) {
     int numDataPoints = runTimeSeconds * property::IMU_UPDATE_HZ;
-    long fileSizeNeeded = (numDataPoints * property::QUAT_DATA_SIZE * numQuats);
+    unsigned long fileSizeNeeded = (numDataPoints * property::QUAT_DATA_SIZE * numQuats);
     if (fileSizeNeeded > property::FLASH_MAX_PAGES * property::FLASH_PAGE_SIZE)
         fileSizeNeeded = property::FLASH_MAX_PAGES * property::FLASH_PAGE_SIZE;
     return fileSizeNeeded;

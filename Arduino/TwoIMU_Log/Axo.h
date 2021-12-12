@@ -1,11 +1,12 @@
 /*
-Contains main Axo helper class.
+Main Axo helper class. Carries both IMUs, handles low-level data saving and calculations.
 
 Lorenzo Shaikewitz, 8/10/2021
 */
 #ifndef AXO_H
 #define AXO_H
 
+#include "IMUCarrier.h"
 #include "constants.h"
 
 #include <NXPMotionSense_Lorenzo.h>
@@ -15,43 +16,6 @@ Lorenzo Shaikewitz, 8/10/2021
 
 #include <SerialFlash.h>
 #include <SPI.h>
-
-/*
-IMUCarrier - IMU data helper class
-*/
-class IMUCarrier {
-public:
-    IMUCarrier(uint8_t in_FXOS8700_addr = FXOS8700_I2C_ADDR0, uint8_t in_FXAS21002_addr = FXAS21002_I2C_ADDR0)
-               : m_imu(in_FXOS8700_addr, in_FXAS21002_addr), m_filter{}
-    {/*does nothing*/}
-
-    bool begin() {
-        m_filter.begin(property::IMU_UPDATE_HZ);
-        return m_imu.begin();
-    }
-
-    bool available() { return m_imu.available(); }
-
-    void update() {
-        m_imu.readMotionSensor(m_ax, m_ay, m_az, m_gx, m_gy, m_gz, m_mx, m_my, m_mz);
-        m_filter.update(m_gx, m_gy, m_gz, m_ax, m_ay, m_az, m_mx, m_my, m_mz);
-        m_filter.getQuaternion(m_quat);
-    }
-
-    const float* getQuat() const { return m_quat; }
-
-    // prints out the quaternion.
-    const void printQuat() const;
-
-    NXPMotionSense m_imu;
-    NXPSensorFusion m_filter;
-
-private:
-    float m_ax, m_ay, m_az;
-    float m_gx, m_gy, m_gz;
-    float m_mx, m_my, m_mz;
-    float m_quat[4]{};
-};
 
 /*
 Axo - carrier class
@@ -64,13 +28,16 @@ public:
     // defaults to passive, 5 minute recording time
     Axo(int runTimeSeconds = 300, bool useMotors = false) :
         m_useMotors{useMotors},
-        m_fileSize{timeToFileSize(runTimeSeconds, 2)},
+        m_fileSize{timeToFileSize(runTimeSeconds, property::NUM_QUATS)},
         m_imuProp(FXOS8700_I2C_ADDR0, FXAS21002_I2C_ADDR0),
         m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1)
     { /*Does nothing*/ }
 
+    // starts up IMU and motors but not flash file.
+    void begin();
+
     // filename must be < 7 characters. No extension needed.
-    Message begin(String filename = "data_");
+    Message beginFlash(String filename = "data_");
 
     bool propIMUAvail() { return m_imuProp.available(); }
     bool adaIMUAvail() { return m_imuAda.available(); }
@@ -81,19 +48,23 @@ public:
     bool propUpdated() { return m_propUpdated; }
     bool adaUpdated() { return !m_propUpdated; }
 
+    // startup
+    bool started();
 
-    bool saveData();
+    bool saveData(unsigned long timeDif);
     // prints most recent data from both IMUs to serial monitor
     void printData();
+    void printRelQuat();
 
     const char* getSavefile() const { return m_savefile; }
 
 
 private:
     bool addBothQuatToBuf();
-    // TODO: addRelQuatToBuf();
+    bool addRelQuatToBuf();
     bool addCharToBuf(char c);  // does buf size checking, calls saveFromBuf if buf full
     bool saveFromBuf();
+    bool addTimeToBuf(unsigned long t);
 
     int timeToFileSize(int runTimeSeconds, int numQuats = 2); // UNTESTED!!
 
@@ -108,6 +79,7 @@ private:
 
     IMUCarrier m_imuProp;
     IMUCarrier m_imuAda;
+    float m_relQuat[4]{};
 };
 
 #endif
