@@ -1,81 +1,76 @@
 /*
-Tests operation of ankle exo using state-based control, informed by IMU angle
-readings at leg and foot.
+Testing code for controlling motors based on gait state.
 
-Lorenzo Shaikewitz, 9/15/2021
+Lorenzo Shaikewitz, 12/12/2021
 */
-// Reading IMU
+
 #include <NXPMotionSense_Lorenzo.h>
 #include "utility/NXPSensorRegisters.h"
 #include <Wire.h>
 #include <EEPROM.h>
 
-// Reading/writing flash
 #include <SerialFlash.h>
 #include <SPI.h>
 
 #include "Axo.h"
 #include "constants.h"
 
+// CHANGE THESE
+String FILE_NAME{"t"};
+const int runTimeSeconds{300};
+bool useMotors{1};
+// END CHANGE
 
-// Variables for user
-String FILE_NAME{"walk"};
-const int runTimeSeconds{60};
-
-float startPermil{500};
-float endPermil{800};
-
-// timekeeping
+Axo axo(runTimeSeconds, useMotors);
 unsigned long startTime{};
-
-
-Axo axo(runTimeSeconds);
-
 
 void setup() {
     Serial.begin(9600);
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
-    // wait for button press (or serial opening)
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
-    while ((digitalRead(BUTTON_PIN) == HIGH) && !Serial) {
-        delay(50);
+    axo.begin();
+    // startup condition: wait for high boot tap.
+    while (true && !Serial) {
+        if (axo.propIMUAvail()) {
+            axo.updatePropIMU();
+            if (axo.started())
+                // exit!
+                break;
+        }
+        delay(10);
     }
 
-    // connect button as interrupt for abort operation
-    attachInterrupt(digitalPinToInterrupt(pin::JOY_BUTTON), abort, RISING);
-
-    Message m = axo.begin(FILE_NAME);
+    Message m = axo.beginFlash(FILE_NAME);
     switch (m) {
         case Message::OK:
             Serial.println("Axo started successfully!");
             break;
         case Message::NO_FLASH_CHIP:
             Serial.println("Flash chip not detected!");
-            while (1);
+            while (1) { blink(LED_BUILTIN); }
             break;
         case Message::NO_FLASH_SPACE:
             Serial.println("No flash space left! Please erase chip.");
-            while (1);
+            while (1) { blink(LED_BUILTIN); }
             break;
         case Message::FILE_TOO_LONG:
             Serial.println("File name is too long. Check constants.h for max length.");
-            while (1);
+            while (1) { blink(LED_BUILTIN); }
             break;
     }
 
+    digitalWrite(LED_BUILTIN, LOW);
     Serial.print("Saving data to: ");
     Serial.println(axo.getSavefile());
     Serial.println("-----");
-
-
     startTime = micros();
 }
 
+unsigned long lastTime{};
+unsigned long lastIMUSaveTime{};
 
 void loop() {
-    // generate a quat
     if (axo.propUpdated()) {
         if (axo.adaIMUAvail()) {
             // pretty consistently get ~10250 us per sample!
@@ -93,45 +88,28 @@ void loop() {
                 // or how to get it, but this combo works.
 
                 delayMicroseconds(300);
-                // check time since start just to be sure we are always saving data
-                if (currentTime - startTime > 5000000) {
-                    if (!axo.saveData()) {
-                        Serial.println("File space exceeded.");
-                        digitalWrite(LED_BUILTIN, HIGH);
-                        while (1) {
-                            blink(LED_BUILTIN);
-                        }
-                    }
-                }
-            } else {
-                if (!axo.saveData()) {
+            }
+            // wait 5 seconds to start saving data
+            if (currentTime - startTime > 5000000) {
+                if (!axo.saveData(currentTime - lastIMUSaveTime)) {
                     Serial.println("File space exceeded.");
-                    digitalWrite(LED_BUILTIN, HIGH);
+                    pinMode(LED_BUILTIN, OUTPUT);
                     while (1) {
                         blink(LED_BUILTIN);
                     }
                 }
+                lastIMUSaveTime = micros();
                 // Serial.println("saving...");
                 // axo.printData();
                 // axo.printRelQuat();
             }
-
-
-            // work with the relative quaternion
-            axo.updateState();
-
         }
     }
 }
 
-
 void blink(int pin) {
     digitalWrite(pin, HIGH);
-    delay(1000);
+    delay(500);
     digitalWrite(pin, LOW);
-    delay(1000);
-}
-
-void abort() {
-    axo.abort();
+    delay(500);
 }

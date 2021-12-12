@@ -30,11 +30,15 @@ public:
         m_useMotors{useMotors},
         m_fileSize{timeToFileSize(runTimeSeconds, property::NUM_QUATS)},
         m_imuProp(FXOS8700_I2C_ADDR0, FXAS21002_I2C_ADDR0),
-        m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1)
+        m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1),
+        m_motors{}
     { /*Does nothing*/ }
 
+    // starts up IMU but not flash file.
+    void begin();
+
     // filename must be < 7 characters. No extension needed.
-    Message begin(String filename = "data_");
+    Message beginFlash(String filename = "data_");
 
     bool propIMUAvail() { return m_imuProp.available(); }
     bool adaIMUAvail() { return m_imuAda.available(); }
@@ -45,25 +49,23 @@ public:
     bool propUpdated() { return m_propUpdated; }
     bool adaUpdated() { return !m_propUpdated; }
 
-    bool saveData();
+    // startup
+    bool started();
+
+    bool saveData(unsigned long timeDif);
     // prints most recent data from both IMUs to serial monitor
     void printData();
     void printRelQuat();
 
     const char* getSavefile() const { return m_savefile; }
 
-    // For use with motor
-    void abort();
-    void writeMotor(int speed, bool coast = false);
-    void updateState(float percentSince);
 
 private:
-    void rampDown();
-
     bool addBothQuatToBuf();
     bool addRelQuatToBuf();
     bool addCharToBuf(char c);  // does buf size checking, calls saveFromBuf if buf full
     bool saveFromBuf();
+    bool addTimeToBuf(unsigned long t);
 
     int timeToFileSize(int runTimeSeconds, int numQuats = 2); // UNTESTED!!
 
@@ -78,11 +80,8 @@ private:
 
     IMUCarrier m_imuProp;
     IMUCarrier m_imuAda;
-
-    float m_lastRelQuat[4]{};
     float m_relQuat[4]{};
-
-    float m_statePermil{};
+    MotorCarrier m_motors;
 };
 
 #endif
