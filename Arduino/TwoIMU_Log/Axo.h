@@ -2,6 +2,7 @@
 Main Axo helper class. Carries both IMUs, handles low-level data saving and calculations.
 
 Lorenzo Shaikewitz, 8/10/2021
+Up to date as of 1/17/2022
 */
 #ifndef AXO_H
 #define AXO_H
