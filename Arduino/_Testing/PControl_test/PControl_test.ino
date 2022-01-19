@@ -5,8 +5,8 @@
 #include <Servo.h>
 
 namespace pin {
-const short MOTOR_R{3};
-const short MOTOR_L{4};
+    const short MOTOR_R{3};
+    const short MOTOR_L{4};
 }
 
 Servo motor_L;
