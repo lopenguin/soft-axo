@@ -40,6 +40,7 @@ void loop() {
     motor_R.writeMicroseconds(MIDDLE_POINT);
   }
   int desired = Serial.parseInt();
+  Serial.read();
   if (desired >= 0 && desired <= 343) {
     Serial.print("Entered ");
     Serial.print(desired);
@@ -47,7 +48,7 @@ void loop() {
     int pL = (int)analogRead(A7);
     int last_pL = pL;
     int goal = (int)(desired / 343.0 * 1023);
-    
+
     // loops while we have not hit the goal OR the velocity is not 0
     while (!isNear(pL / 1023.0 * 343, desired, UNCERTAINTY) || !isNear(last_pL, pL, 5)) {
       last_pL = pL;
@@ -55,7 +56,7 @@ void loop() {
       goal = (int)(desired / 343.0 * 1023);
       int pwmL = p(pL, goal);
       motor_L.writeMicroseconds(pwmL);
-      
+
       Serial.print(pL / 1023.0 * 343);
       Serial.print(" ");
       Serial.println(desired);
