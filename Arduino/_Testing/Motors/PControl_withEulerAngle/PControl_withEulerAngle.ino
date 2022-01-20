@@ -1,5 +1,8 @@
 /*
   Code to test the ESC powering a motor. Uses servo class.
+
+  Neil added euler angle input to p control to determine angle! Works with two
+  motors.
   Lorenzo Shaikewitz, 1/17/2022
 */
 #include <Servo.h>
@@ -7,6 +10,9 @@
 namespace pin {
 const short MOTOR_R{3};
 const short MOTOR_L{4};
+
+const short POT_L{A7};
+const short POT_R{A8};
 }
 
 const int MIDDLE_POINT = 1500;
@@ -45,22 +51,51 @@ void loop() {
     Serial.print("Entered ");
     Serial.print(desired);
     Serial.println(" --> centering...");
-    int pL = (int)analogRead(A7);
+    int pL = (int)analogRead(pin::POT_L);
     int last_pL = pL;
+    int pR = (int)analogRead(pin::POT_R);
+    int last_pR = pR;
+
     int goal = (int)(desired / 343.0 * 1023);
 
-    // loops while we have not hit the goal OR the velocity is not 0
-    while (!isNear(pL / 1023.0 * 343, desired, UNCERTAINTY) || !isNear(last_pL, pL, 5)) {
-      last_pL = pL;
-      pL = (int)analogRead(A7);
-      goal = (int)(desired / 343.0 * 1023);
-      int pwmL = p(pL, goal);
-      motor_L.writeMicroseconds(pwmL);
+    // loops while we have not hit the goal OR the velocity is not 0 (for both motors)
+    while (1) {
+        bool leftGood{false};
+        if (!isNear(pL / 1023.0 * 343, desired, UNCERTAINTY) || !isNear(last_pL, pL, 5)) {
+            last_pL = pL;
+            pL = (int)analogRead(pin::POT_L);
+            goal = (int)(desired / 343.0 * 1023);
+            int pwmL = p(pL, goal);
+            motor_L.writeMicroseconds(pwmL);
+        } else {
+            leftGood = true;
+        }
 
-      Serial.print(pL / 1023.0 * 343);
-      Serial.print(" ");
-      Serial.println(desired);
-      delay(10); // we need this delay to measure velocity accurately -> ~100 Hz controller
+        bool rightGood{false};
+        if (!isNear(pR / 1023.0 * 343, desired, UNCERTAINTY) || !isNear(last_pR, pR, 5)) {
+            last_pR = pR;
+            pR = (int)analogRead(pin::POT_R);
+            goal = (int)(desired / 343.0 * 1023);
+            int pwmR = p(pR, goal);
+            motor_R.writeMicroseconds(pwmR);
+        } else {
+            rightGood = true;
+        }
+
+        Serial.print(pL / 1023.0 * 343);
+        Serial.print(" ");
+        Serial.print(desired);
+        Serial.print('\t');
+
+        Serial.print(pR / 1023.0 * 343);
+        Serial.print(" ");
+        Serial.println(desired);
+
+        if (leftGood && rightGood) {
+            break;
+        }
+
+        delay(10);
     }
   } else {
     Serial.println("Invalid input, please try again.");

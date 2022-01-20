@@ -1,5 +1,5 @@
 /*
-  Code to test the ESC powering a motor. Uses servo class.
+  Code to test the ESC powering a motor. Uses servo class and p control.
   Lorenzo Shaikewitz, 1/17/2022
 */
 #include <Servo.h>
