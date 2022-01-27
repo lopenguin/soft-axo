@@ -1,4 +1,4 @@
-M/*
+/*
 Code to test time based control of motors!!
 
 Lorenzo Shaikewitz, 1/21/2022
@@ -19,6 +19,7 @@ String FILE_NAME{"t"};
 const int runTimeSeconds{300};
 unsigned long startTime{};
 unsigned long stepStartTime{};
+unsigned long lastMotorWriteTime{};
 
 Axo axo(runTimeSeconds);
 
@@ -64,6 +65,7 @@ void setup() {
     Serial.println("-----");
     startTime = micros();
     stepStartTime = millis();
+    lastMotorWriteTime = stepStartTime;
 }
 
 unsigned long lastTime{};
@@ -107,7 +109,11 @@ void loop() {
 
     /* Run the motors */
     // TODO: add a backwards movement stage?
-    unsigned long stepTime{millis() - stepStartTime};
+    unsigned long currentTime = millis();
+    unsigned long stepTime{currentTime - stepStartTime};
+    if ((currentTime - lastMotorWriteTime) > 10) {
+        lastMotorWriteTime = currentTime;
+
         if (stepTime > parameter::STEP_TIME_MS) {
             stepTime = 0;
             stepStartTime = millis();
@@ -123,6 +129,7 @@ void loop() {
             axo.setMotorAngle(parameter::MAX_TURN);
             // Serial.println(stepTime);
         }
+    }
 }
 
 void blink(int pin) {

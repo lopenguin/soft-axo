@@ -33,10 +33,15 @@ bool DroneMotor::moveToAngle(float angle) {
     int currentPos{ analogRead(m_potPin) };
 
     // safety stop
-    if (currentPos > 900 || currentPos < 200) {
-        Serial.println(currentPos);
-        center();
-        return true;
+    if (currentPos > 924) {
+        Serial.println("In 'safety stop' position");
+        writeMicroseconds(motor::MIN_SPEED_ABOVE); // proceed slowly
+        return false;
+    }
+    if (currentPos < 100) {
+        Serial.println("In 'safety stop' position");
+        writeMicroseconds(motor::MIN_SPEED_BELOW); // proceed slowly
+        return false;
     }
 
     int desiredPos = angle / motor::POT_TO_DEG;
