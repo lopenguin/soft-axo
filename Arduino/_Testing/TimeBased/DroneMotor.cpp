@@ -24,19 +24,34 @@ void DroneMotor::center() {
 }
 
 
+void DroneMotor::readPot() {
+    m_lastPos = analogRead(m_potPin);
+}
+
+
 bool DroneMotor::moveToAngle(float angle) {
     int currentPos{ analogRead(m_potPin) };
+
+    // safety stop
+    if (currentPos > 900 || currentPos < 200) {
+        Serial.println(currentPos);
+        center();
+        return true;
+    }
+
     int desiredPos = angle / motor::POT_TO_DEG;
 
     const auto isNear {
         [](int x1, int x2, int range = motor::UNCERTAINTY) {
             return !(x1 > (x2 + range) || x1 < (x2 - range));
         }
-    }
+    };
 
     if (!isNear(currentPos, desiredPos) || !isNear(m_lastPos, currentPos, 5)) {
         // save lastPos for isNear next time
         m_lastPos = currentPos;
+        int currentPos{ analogRead(m_potPin) };
+        int desiredPos = angle / motor::POT_TO_DEG;
 
         int pwm = p(currentPos, desiredPos);
         writeMicroseconds(pwm);
@@ -52,10 +67,10 @@ bool DroneMotor::moveToAngle(float angle) {
 
 int DroneMotor::p(int curr, int desired) {
     int pwmVal = 0.2 * (curr - desired) + 1500;
-    if (pwmVal < 1550 && pwmVal > 1510) {
-        pwmVal = 1550;
-    } else if (pwmVal > 1470 && pwmVal < 1490) {
-        pwmVal = 1470;
+    if (pwmVal < motor::MIN_SPEED_ABOVE && pwmVal > 1510) {
+        pwmVal = motor::MIN_SPEED_ABOVE;
+    } else if (pwmVal > motor::MIN_SPEED_BELOW && pwmVal < 1490) {
+        pwmVal = motor::MIN_SPEED_BELOW;
     }
     if (pwmVal > motor::MAX_FORWARD_SPEED) {
         pwmVal = motor::MAX_FORWARD_SPEED;

@@ -63,7 +63,7 @@ public:
 
     // runs motors (range between 0 - 343 degrees). Returns true when done
     bool setMotorAngle(float angle);
-    void stopMotors();
+    void centerMotors();
 
 
 private:
@@ -89,6 +89,8 @@ private:
 
     DroneMotor m_motorR;
     DroneMotor m_motorL;
+    const int m_startingPosL{270};
+    const int m_startingPosR{90};
 };
 
 #endif

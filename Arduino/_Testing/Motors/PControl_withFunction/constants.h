@@ -7,8 +7,11 @@ namespace motor {
     const int MIDDLE_POINT = 1500;
     const int PWM_LOW = 1000;
     const int PWM_HIGH = 2000;
-    const int MAX_FORWARD_SPEED = 1560;
-    const int MAX_BACKWARD_SPEED = 1440;
+    const int MAX_FORWARD_SPEED = 1800;
+    const int MAX_BACKWARD_SPEED = 1200;
+
+    const int MIN_SPEED_BELOW = 1420;
+    const int MIN_SPEED_ABOVE = 1580;
 
     const int CALIB_DELAY = 7000;
 

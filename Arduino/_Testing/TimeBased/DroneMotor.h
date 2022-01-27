@@ -18,6 +18,8 @@ public:
 
     void attach();
 
+    void readPot();
+
     // call to move motor to the center point (stop)
     void center();
 

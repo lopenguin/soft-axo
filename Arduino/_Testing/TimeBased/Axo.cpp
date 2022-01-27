@@ -29,6 +29,29 @@ void Axo::begin() {
     m_motorL.center();
     m_motorR.center();
     delay(500);
+
+
+    m_motorL.readPot();
+    m_motorR.readPot();
+    // move to 90 degree position
+    int c{0};
+    while (1) {
+        bool lThere{m_motorL.moveToAngle(m_startingPosL)};
+        bool rThere{m_motorR.moveToAngle(m_startingPosR)};
+
+        if (lThere && rThere) {
+            Serial.print('\n');
+            break;
+        }
+        Serial.print('\n');
+
+        // delay to emulate 100 Hz
+        delay(10);
+        c++;
+        if (c > 100) {
+            break;
+        }
+    }
 }
 
 Message Axo::beginFlash(String filename) {
@@ -118,12 +141,16 @@ void Axo::printRelQuat() {
 
 
 bool Axo::setMotorAngle(float angle) {
-    if (m_motorL.moveToAngle(angle) && motorR.moveToAngle(angle))
-        break;
+    Serial.print(m_startingPosL - angle);
+    Serial.print(' ');
+    Serial.println(m_startingPosR + angle);
+    bool motorL = m_motorL.moveToAngle(m_startingPosL - angle);
+    bool motorR = m_motorR.moveToAngle(m_startingPosR + angle);
+    return (motorL && motorR);
 }
 
 
-void Axo::stopMotors() {
+void Axo::centerMotors() {
     m_motorL.center();
     m_motorR.center();
 }
@@ -188,7 +215,10 @@ bool Axo::addBothQuatToBuf() {
     const float* quatProp = m_imuProp.getQuat();
     const float* quatAda = m_imuAda.getQuat();
 
-    return saveQuat(quatProp) && saveQuat(quatAda);
+    bool p = saveQuat(quatProp);
+    bool a = saveQuat(quatAda);
+
+    return p && a;
 }
 
 

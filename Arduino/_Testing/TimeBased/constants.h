@@ -11,7 +11,7 @@ namespace parameter {
 
     constexpr float START_PERCENT{0.2};
     constexpr float END_PERCENT{0.6};
-    constexpr int MAX_TURN{90};
+    constexpr int MAX_TURN{120};
 
     const float START_TIME_MS{START_PERCENT * STEP_TIME_MS};
     const float END_TIME_MS{END_PERCENT * STEP_TIME_MS};
@@ -36,8 +36,8 @@ namespace pin {
     constexpr short MOTOR_R{3};
     constexpr short MOTOR_L{4};
 
-    constexpr short POT_L{A7};
-    constexpr short POT_R{A8};
+    constexpr short POT_L{21};
+    constexpr short POT_R{22};
 }
 
 namespace motor {
@@ -46,8 +46,11 @@ namespace motor {
     constexpr int MIDDLE_POINT = 1500;
     constexpr int PWM_LOW = 1000;
     constexpr int PWM_HIGH = 2000;
-    constexpr int MAX_FORWARD_SPEED = 1560;
-    constexpr int MAX_BACKWARD_SPEED = 1440;
+    constexpr int MAX_FORWARD_SPEED = 1580;
+    constexpr int MAX_BACKWARD_SPEED = 1420;
+
+    constexpr int MIN_SPEED_BELOW = 1400;
+    constexpr int MIN_SPEED_ABOVE = 1600;
 
     constexpr int CALIB_DELAY = 7000;
 
