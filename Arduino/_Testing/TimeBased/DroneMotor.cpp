@@ -5,10 +5,10 @@ Lorenzo Shaikewitz, 1/21/2022
 
 #include "constants.h"
 #include <Arduino.h>
-#include <Servo.h>
+#include <PWMServo_Lorenzo.h>
 
 void DroneMotor::attach() {
-    Servo::attach(m_motorPin, motor::PWM_LOW, motor::PWM_HIGH);
+    PWMServo::attach(m_motorPin, motor::PWM_LOW, motor::PWM_HIGH);
     pinMode(m_potPin, INPUT);
 
     // make sure we know position
@@ -24,8 +24,54 @@ void DroneMotor::center() {
 }
 
 
-void DroneMotor::readPot() {
+int DroneMotor::readPot() {
     m_lastPos = analogRead(m_potPin);
+    return m_lastPos;
+}
+
+
+bool DroneMotor::gotoAngleFixedSpeed(float startAngle, float endAngle, int speed) {
+    int currentPos{ analogRead(m_potPin) };
+    int desiredPos = endAngle / motor::POT_TO_DEG;
+
+
+    // safety stop
+    if (currentPos > 924) {
+        Serial.println("In 'safety stop' position");
+        writeMicroseconds(motor::MIN_SPEED_ABOVE); // proceed slowly
+        return false;
+    }
+    if (currentPos < 100) {
+        Serial.println("In 'safety stop' position");
+        writeMicroseconds(motor::MIN_SPEED_BELOW); // proceed slowly
+        return false;
+    }
+
+
+    bool forwards{ endAngle > startAngle };
+    // stop if passed position
+    if (forwards) {
+        if (currentPos > endAngle) {
+            writeMicroseconds(motor::MIN_SPEED_ABOVE); // proceed slowly
+            return false;
+        }
+        if (currentPos < startAngle) {
+            writeMicroseconds(motor::MIN_SPEED_ABOVE); // proceed slowly
+            return false;
+        }
+    } else {
+        if (currentPos < endAngle) {
+            writeMicroseconds(motor::MIN_SPEED_BELOW); // proceed slowly
+            return false;
+        }
+        if (currentPos > startAngle) {
+            writeMicroseconds(motor::MIN_SPEED_BELOW); // proceed slowly
+            return false;
+        }
+    }
+
+    writeMicroseconds(speed);
+    return true;
 }
 
 

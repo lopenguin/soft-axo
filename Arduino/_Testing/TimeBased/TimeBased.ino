@@ -111,8 +111,8 @@ void loop() {
     // TODO: add a backwards movement stage?
     unsigned long currentTime = millis();
     unsigned long stepTime{currentTime - stepStartTime};
-    if ((currentTime - lastMotorWriteTime) > 10) {
-        lastMotorWriteTime = currentTime;
+    // if ((currentTime - lastMotorWriteTime) > 10) {
+    //     lastMotorWriteTime = currentTime;
 
         if (stepTime > parameter::STEP_TIME_MS) {
             stepTime = 0;
@@ -126,10 +126,12 @@ void loop() {
             axo.setMotorAngle(0);
         } else {
             // write to our desired speed
-            axo.setMotorAngle(parameter::MAX_TURN);
+            axo.writeMotors(50);
             // Serial.println(stepTime);
+
+            Serial.printf("%d\t%d\n", axo.readLPot(), axo.readRPot());
         }
-    }
+    // }
 }
 
 void blink(int pin) {

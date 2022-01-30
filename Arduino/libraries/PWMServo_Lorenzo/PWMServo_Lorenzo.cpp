@@ -195,10 +195,10 @@ void PWMServo::write(int angleArg)
 	angle = angleArg;
 	uint32_t us = (((max16 - min16) * 46603 * angle) >> 11) + (min16 << 12); // us*256
 	uint32_t duty = (us * 3355) >> 22;
-	float usec = (float)((max16 - min16)<<4) * ((float)angle / 180.0f) + (float)(min16<<4);
+	// float usec = (float)((max16 - min16)<<4) * ((float)angle / 180.0f) + (float)(min16<<4);
 	// uint32_t duty = (int)(usec / 20000.0f * 4096.0f);
-	Serial.printf("angle=%d, usec=%.2f, us=%.2f, duty=%d, min=%d, max=%d\n",
-		angle, usec, (float)us / 256.0f, duty, min16<<4, max16<<4);
+	// Serial.printf("angle=%d, usec=%.2f, us=%.2f, duty=%d, min=%d, max=%d\n",
+	// 	angle, usec, (float)us / 256.0f, duty, min16<<4, max16<<4);
 #if TEENSYDUINO >= 137
 	noInterrupts();
 	uint32_t oldres = analogWriteResolution(12);
@@ -212,10 +212,10 @@ void PWMServo::write(int angleArg)
 }
 
 void PWMServo::writeMicroseconds(uint32_t us) {
-    us *= 256;
+    us = us << 8;
     uint32_t duty = (us * 3355) >> 22;
-    Serial.printf("us=%.2f, duty=%d, min=%d, max=%d\n",
-		(float)us / 256.0f, duty, min16<<4, max16<<4);
+    // Serial.printf("us=%.2f, duty=%d, min=%d, max=%d\n",
+	// 	(float)us / 256.0f, duty, min16<<4, max16<<4);
 #if TEENSYDUINO >= 137
 	noInterrupts();
 	uint32_t oldres = analogWriteResolution(12);

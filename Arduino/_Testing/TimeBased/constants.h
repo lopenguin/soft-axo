@@ -11,7 +11,7 @@ namespace parameter {
 
     constexpr float START_PERCENT{0.2};
     constexpr float END_PERCENT{0.6};
-    constexpr int MAX_TURN{120};
+    constexpr int MAX_TURN{60};
 
     const float START_TIME_MS{START_PERCENT * STEP_TIME_MS};
     const float END_TIME_MS{END_PERCENT * STEP_TIME_MS};
@@ -43,16 +43,16 @@ namespace pin {
 namespace motor {
     constexpr float POT_TO_DEG{ 343.0 / 1023.0 };
 
-    constexpr int MIDDLE_POINT = 1500;
+    constexpr int MIDDLE_POINT = 1515;
     constexpr int PWM_LOW = 1000;
     constexpr int PWM_HIGH = 2000;
-    constexpr int MAX_FORWARD_SPEED = 1580;
-    constexpr int MAX_BACKWARD_SPEED = 1420;
+    constexpr int MAX_FORWARD_SPEED = 1575;
+    constexpr int MAX_BACKWARD_SPEED = 1455;
 
-    constexpr int MIN_SPEED_BELOW = 1400;
-    constexpr int MIN_SPEED_ABOVE = 1600;
+    constexpr int MIN_SPEED_BELOW = 1470;
+    constexpr int MIN_SPEED_ABOVE = 1550;
 
-    constexpr int CALIB_DELAY = 7000;
+    constexpr int CALIB_DELAY = 2000;
 
     // how close to get to goal in degrees (+/-)
     constexpr int UNCERTAINTY = 10 / POT_TO_DEG;

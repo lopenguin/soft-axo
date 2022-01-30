@@ -5,7 +5,7 @@
   motors.
   Lorenzo Shaikewitz, 1/17/2022
 */
-#include <Servo.h>
+#include <PWMServo_Lorenzo.h>
 
 namespace pin {
 const short MOTOR_R{3};
@@ -20,17 +20,91 @@ const int PWM_LOW = 1000;
 const int PWM_HIGH = 2000;
 const int MAX_FORWARDS_SPEED = 1560;
 const int MAX_BACKWARDS_SPEED = 1440;
-const int CALIB_DELAY = 7000;
+const int CALIB_DELAY = 2000;
 const int UNCERTAINTY = 10; // how close to get to goal (+/-)
 
-Servo motor_L;
-Servo motor_R;
+const int MIDDLE{1522};
+const int stepTime{1000};
+const int maxSpeed1{50};
+unsigned long stepStartTime{0};
+
+class DroneMotor : public PWMServo {
+public:
+    DroneMotor(int motorPin, int potPin) : PWMServo(),
+                    m_motorPin{motorPin}, m_potPin{potPin},
+                    m_lastWriteVal{1500}
+    {/*does nothing*/}
+
+
+    // connects motor to a pin
+    void attach() {
+        PWMServo::attach(m_motorPin);
+        pinMode(m_potPin, INPUT);
+
+    }
+
+    // stops motor from moving
+    void stop(int lastWriteVal = MIDDLE) {
+        if (m_lastWriteVal > MIDDLE) {
+            writeMicroseconds(MIDDLE_LOW);
+        } else {
+            writeMicroseconds(MIDDLE_HIGH);
+        }
+        m_lastWriteVal = lastWriteVal;
+    }
+
+    // writes the motor to the given speed (with safety stop)
+    void write(int speed, unsigned long t) {
+        // safety stop
+        if (speed == m_lastWriteVal) {
+            if ((t - m_lastWriteTime) > MAX_WRITE_TIME) {
+                stop(speed);
+            }
+            return;
+        }
+        m_lastWriteTime = t;
+        m_lastWriteVal = speed;
+
+
+        writeMicroseconds(speed);
+    }
+
+    // stops the motor when in the neighborhood of a desired angle
+    void writeToAngle(int angle, int speed, unsigned long t) {
+        int currentPos = analogRead(m_potPin);
+        int desiredPos = speed / 343.0 * 1024;
+
+        if (((currentPos + 50) % 1024 > desiredPos) &&
+            ((currentPos - 50) % 1024 < desiredPos)) {
+            stop();
+            return;
+        }
+        write(speed, t);
+    }
+
+
+private:
+    const int m_motorPin;
+    const int m_potPin;
+
+    int m_lastWriteVal;
+    unsigned long m_lastWriteTime{};
+
+
+    const int MIDDLE_HIGH{1520};
+    const int MIDDLE_LOW{1500};
+    const uint MAX_WRITE_TIME{200};
+};
+
+
+DroneMotor motor_L(pin::MOTOR_L, pin::POT_L);
+DroneMotor motor_R(pin::MOTOR_R, pin::POT_R);
 
 void setup() {
   Serial.begin(9600);
   Serial.setTimeout(20);
-  motor_L.attach(pin::MOTOR_L, PWM_LOW, PWM_HIGH);
-  motor_R.attach(pin::MOTOR_R, PWM_LOW, PWM_HIGH);
+  motor_L.attach();
+  motor_R.attach();
   delay(CALIB_DELAY);
   motor_L.writeMicroseconds(MIDDLE_POINT);
   motor_R.writeMicroseconds(MIDDLE_POINT);
@@ -42,8 +116,8 @@ void setup() {
 void loop() {
   Serial.println("Enter an angle between 0 and 343 degrees.");
   while (Serial.available() == 0) {
-    motor_L.writeMicroseconds(MIDDLE_POINT);
-    motor_R.writeMicroseconds(MIDDLE_POINT);
+    motor_L.stop();
+    motor_R.stop();
   }
   int desired = Serial.parseInt();
   Serial.read();
@@ -57,6 +131,7 @@ void loop() {
     int last_pR = pR;
 
     int goal = (int)(desired / 343.0 * 1023);
+    unsigned startTime = millis();
 
     // loops while we have not hit the goal OR the velocity is not 0 (for both motors)
     while (1) {
@@ -64,9 +139,12 @@ void loop() {
         if (!isNear(pL / 1023.0 * 343, desired, UNCERTAINTY) || !isNear(last_pL, pL, 5)) {
             last_pL = pL;
             pL = (int)analogRead(pin::POT_L);
-            goal = (int)(desired / 343.0 * 1023);
+            goal = (int)((270-desired) / 343.0 * 1023);
             int pwmL = p(pL, goal);
-            motor_L.writeMicroseconds(pwmL);
+            motor_L.write(pwmL, millis());
+
+            int offset = pwmL - MIDDLE;
+            // motor_R.write(MIDDLE - offset, millis());
         } else {
             leftGood = true;
         }
@@ -75,9 +153,9 @@ void loop() {
         if (!isNear(pR / 1023.0 * 343, desired, UNCERTAINTY) || !isNear(last_pR, pR, 5)) {
             last_pR = pR;
             pR = (int)analogRead(pin::POT_R);
-            goal = (int)(desired / 343.0 * 1023);
+            goal = (int)((90+desired) / 343.0 * 1023);
             int pwmR = p(pR, goal);
-            motor_R.writeMicroseconds(pwmR);
+            motor_R.write(pwmR, millis());
         } else {
             rightGood = true;
         }
@@ -92,6 +170,10 @@ void loop() {
         Serial.println(desired);
 
         if (leftGood && rightGood) {
+            break;
+        }
+
+        if (millis() - startTime > 2000) {
             break;
         }
 

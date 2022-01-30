@@ -25,10 +25,10 @@ void Axo::begin() {
     // set up motors
     m_motorL.attach();
     m_motorR.attach();
-    delay(motor::CALIB_DELAY);
+    delay(500);
     m_motorL.center();
     m_motorR.center();
-    delay(500);
+    delay(3000);
 
 
     m_motorL.readPot();
@@ -141,9 +141,6 @@ void Axo::printRelQuat() {
 
 
 bool Axo::setMotorAngle(float angle) {
-    Serial.print(m_startingPosL - angle);
-    Serial.print(' ');
-    Serial.println(m_startingPosR + angle);
     bool motorL = m_motorL.moveToAngle(m_startingPosL - angle);
     bool motorR = m_motorR.moveToAngle(m_startingPosR + angle);
     return (motorL && motorR);
@@ -153,6 +150,18 @@ bool Axo::setMotorAngle(float angle) {
 void Axo::centerMotors() {
     m_motorL.center();
     m_motorR.center();
+}
+
+
+void Axo::setMotorAngleWithSpeed(float startAngle, float endAngle, int offset) {
+    m_motorL.gotoAngleFixedSpeed(m_startingPosL - startAngle, m_startingPosL - endAngle, motor::MIDDLE_POINT + offset);
+    m_motorR.gotoAngleFixedSpeed(m_startingPosR + startAngle, m_startingPosR + endAngle, motor::MIDDLE_POINT - offset);
+}
+
+
+void Axo::writeMotors(int offset) {
+    m_motorL.writeMicroseconds(motor::MIDDLE_POINT + offset);
+    // m_motorR.writeMicroseconds(motor::MIDDLE_POINT - offset);
 }
 
 

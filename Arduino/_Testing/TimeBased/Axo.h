@@ -63,6 +63,17 @@ public:
 
     // runs motors (range between 0 - 343 degrees). Returns true when done
     bool setMotorAngle(float angle);
+
+    // runs the motors at a fixed speed, with a hardstop included at a given angle
+    void setMotorAngleWithSpeed(float startAngle, float endAngle, int offset);
+
+    // writes the motors to a speed given by 1500 +/- offset.
+    // directly uses writeMicroseconds
+    void writeMotors(int offset);
+
+    int readRPot() { return m_motorR.readPot(); }
+    int readLPot() { return m_motorL.readPot(); }
+
     void centerMotors();
 
 

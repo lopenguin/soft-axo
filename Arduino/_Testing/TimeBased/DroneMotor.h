@@ -7,18 +7,18 @@ Lorenzo Shaikewitz, 1/21/2022
 #define DRONE_MOTOR_H
 
 
-#include <Servo.h>
+#include <PWMServo_Lorenzo.h>
 #include "constants.h"
 
 
-class DroneMotor : public Servo {
+class DroneMotor : public PWMServo {
 public:
-    DroneMotor(int motorPin, int potPin) : Servo(), m_motorPin{motorPin}, m_potPin{potPin}
+    DroneMotor(int motorPin, int potPin) : PWMServo(), m_motorPin{motorPin}, m_potPin{potPin}
     {/*does nothing*/}
 
     void attach();
 
-    void readPot();
+    int readPot();
 
     // call to move motor to the center point (stop)
     void center();
@@ -28,6 +28,8 @@ public:
       Returns T if position reached, F if needs to be called again.
     */
     bool moveToAngle(float angle);
+
+    bool gotoAngleFixedSpeed(float startAngle, float endAngle, int speed);
 
 private:
     const int m_motorPin;
