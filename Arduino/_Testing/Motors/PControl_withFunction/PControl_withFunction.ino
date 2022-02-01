@@ -5,42 +5,65 @@ Lorenzo Shaikewitz, 1/20/2022
 
 NOT TESTED
 */
-#include <Servo.h>
+#include <PWMServo.h>
 #include "constants.h"
 
-
-class DroneMotor : public Servo {
+class DroneMotor : public PWMServo {
 public:
-    DroneMotor(int motorPin, int potPin) : Servo(), m_motorPin{motorPin}, m_potPin{potPin}, m_print{ false }
+    DroneMotor(int motorPin, int potPin) : PWMServo(),
+                    m_motorPin{motorPin}, m_potPin{potPin},
+                    m_lastWriteVal{1500}
     {/*does nothing*/}
 
-    void enablePrinting() { m_print = true; }
 
+    // connects motor to a pin
     void attach() {
-        Servo::attach(m_motorPin, motor::PWM_LOW, motor::PWM_HIGH);
+        PWMServo::attach(m_motorPin);
         pinMode(m_potPin, INPUT);
 
-        // make sure we know position
-        m_lastPos = analogRead(m_potPin);
     }
 
-    // call to move motor to the center point (stop)
-    void center() {
-        writeMicroseconds(motor::MIDDLE_POINT);
-
-        // make sure we know position
-        m_lastPos = analogRead(m_potPin);
+    // stops motor from moving
+    void stop(int lastWriteVal = MIDDLE) {
+        if (m_lastWriteVal > MIDDLE) {
+            writeMicroseconds(MIDDLE_LOW);
+        } else {
+            writeMicroseconds(MIDDLE_HIGH);
+        }
+        m_lastWriteVal = lastWriteVal;
     }
 
-    void readPot() {
-        m_lastPos = analogRead(m_potPin);
+    // writes the motor to the given speed (with safety stop)
+    void write(int speed, unsigned long t) {
+        // safety stop
+        if (speed == m_lastWriteVal) {
+            if ((t - m_lastWriteTime) > MAX_WRITE_TIME) {
+                stop(speed);
+            }
+            return;
+        }
+        m_lastWriteTime = t;
+        m_lastWriteVal = speed;
+
+
+        writeMicroseconds(speed);
     }
 
-    /*Call repeatedly (100 Hz) to move the motor to this absolute position.
-      Angle must be between 0 and 343 degrees (can be float)
-      Returns T if position reached, F if needs to be called again.
-    */
-    bool moveToAngle(float angle) {
+    // stops the motor when in the neighborhood of a desired angle
+    // void writeToAngle(int angle, int speed, unsigned long t) {
+    //     int currentPos = analogRead(m_potPin);
+    //     int desiredPos = speed / 343.0 * 1024;
+    //
+    //     if (((currentPos + 50) % 1024 > desiredPos) &&
+    //         ((currentPos - 50) % 1024 < desiredPos)) {
+    //         stop();
+    //         return;
+    //     }
+    //     write(speed, t);
+    // }
+
+
+    bool writeToAnglePControl(float angle, unsigned long t) {
         int currentPos{ analogRead(m_potPin) };
         int desiredPos = angle / motor::POT_TO_DEG;
 
@@ -51,7 +74,7 @@ public:
 
             int pwm = p(currentPos, desiredPos);
             Serial.print(pwm);
-            writeMicroseconds(pwm);
+            write(pwm, t);
 
             if (m_print) {
                 Serial.print(": ");
@@ -68,10 +91,24 @@ public:
         }
     }
 
+
+    int readPot() {
+        m_lastPos = analogRead(m_potPin);
+        return m_lastPos;
+    }
+
+
 private:
     const int m_motorPin;
     const int m_potPin;
-    bool m_print;
+
+    int m_lastWriteVal;
+    unsigned long m_lastWriteTime{};
+
+    const int MIDDLE{1522};
+    const int MIDDLE_HIGH{1520};
+    const int MIDDLE_LOW{1500};
+    const uint MAX_WRITE_TIME{200};
 
     int m_lastPos{0};
 
@@ -102,7 +139,6 @@ private:
         return true;
     }
 };
-
 
 DroneMotor motorL(pin::MOTOR_L, pin::POT_L);
 DroneMotor motorR(pin::MOTOR_R, pin::POT_R);
@@ -137,8 +173,9 @@ void setup() {
 
     // loops while we have not hit the goal OR the velocity is not 0 (for both motors)
     while (1) {
-        bool lThere{motorL.moveToAngle(startingPosL)};
-        bool rThere{motorR.moveToAngle(startingPosR)};
+        unsigned long currentTime = millis();
+        bool lThere{motorL.writeToAnglePControl(startingPosL, currentTime)};
+        bool rThere{motorR.writeToAnglePControl(startingPosR, currentTime)};
 
         if (lThere && rThere) {
             Serial.print('\n');
@@ -166,11 +203,13 @@ void loop() {
     // int desiredR = desired + 180 % 360;
     motorL.readPot();
     motorR.readPot();
+    unsigned long startTime = millis();
 
     // loops while we have not hit the goal OR the velocity is not 0 (for both motors)
     while (1) {
-        bool lThere{motorL.moveToAngle(startingPosL - desired)};
-        bool rThere{motorR.moveToAngle(startingPosR + desired)};
+        unsigned long currentTime{millis()};
+        bool lThere{motorL.writeToAnglePControl(startingPosL - desired, currentTime)};
+        bool rThere{motorR.writeToAnglePControl(startingPosR + desired, currentTime)};
 
         if (lThere && rThere) {
             Serial.print('\n');
@@ -178,8 +217,9 @@ void loop() {
         }
         Serial.print('\n');
 
-        // delay to emulate 100 Hz
-        delay(1);
+        if (millis() - startTime > 2000) {
+            break;
+        }
     }
   } else {
     Serial.println("Invalid input, please try again.");

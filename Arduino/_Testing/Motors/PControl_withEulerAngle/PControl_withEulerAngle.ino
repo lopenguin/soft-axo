@@ -131,7 +131,7 @@ void loop() {
     int last_pR = pR;
 
     int goal = (int)(desired / 343.0 * 1023);
-    unsigned startTime = millis();
+    unsigned long startTime = millis();
 
     // loops while we have not hit the goal OR the velocity is not 0 (for both motors)
     while (1) {
@@ -176,8 +176,6 @@ void loop() {
         if (millis() - startTime > 2000) {
             break;
         }
-
-        delay(10);
     }
   } else {
     Serial.println("Invalid input, please try again.");
