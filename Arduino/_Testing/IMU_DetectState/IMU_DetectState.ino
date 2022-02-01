@@ -81,6 +81,7 @@ void setup() {
 unsigned long lastTime{};
 unsigned long lastIMUSaveTime{};
 int stepCount{0};
+unsigned long lastStepTime{0};
 
 void loop() {
     if (axo.propUpdated()) {
@@ -115,10 +116,13 @@ void loop() {
                 // axo.printData();
                 // axo.printRelQuat();
 
-                // check if we've hit something good
+                // check if we've taken a step (this detects toe lift)
                 if (axo.updateAverage()) {
-                    stepCount++;
-                    Serial.printf("STEP %d\n", stepCount);
+                    if (currentTime - lastStepTime > 800000) {
+                        Serial.printf("STEP %d: %f milliseconds\n", stepCount, (currentTime - lastStepTime)/1000.0);
+                        lastStepTime = micros();
+                        stepCount++;
+                    }
                 }
             }
         }

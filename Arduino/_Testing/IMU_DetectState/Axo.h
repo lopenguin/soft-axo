@@ -31,7 +31,7 @@ public:
 
 
 private:
-    static const int m_size{11};
+    static const int m_size{15};
     float m_relQuatHistory[m_size]{};
 
     int m_nextIdx{};
