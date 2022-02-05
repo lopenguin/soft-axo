@@ -33,6 +33,17 @@ String FILE_NAME{"t"};
 const int runTimeSeconds{300};
 unsigned long startTime{};
 
+namespace cal {
+    bool begun{0};
+    bool done{0};
+
+    int numSteps{0};
+    int totalStepTimeMS{0};
+
+    const int maxSteps{15};    // calibration stops after this many reached
+    int avgStepTime{0};
+}
+
 Axo axo(runTimeSeconds);
 
 void setup() {
@@ -82,6 +93,7 @@ unsigned long lastTime{};
 unsigned long lastIMUSaveTime{};
 int stepCount{0};
 unsigned long lastStepTime{0};
+unsigned long stepStartTime{0};
 
 void loop() {
     if (axo.propUpdated()) {
@@ -118,10 +130,38 @@ void loop() {
 
                 // check if we've taken a step (this detects toe lift)
                 if (axo.updateAverage()) {
-                    if (currentTime - lastStepTime > 800000) {
-                        Serial.printf("STEP %d: %f milliseconds\n", stepCount, (currentTime - lastStepTime)/1000.0);
-                        lastStepTime = micros();
+                    if (!cal::begun) {
+                        Serial.println("Calibration starting! Please walk as normal.");
+                        cal::begun = true;
+                    }
+                    unsigned long currentTimeMS{ millis() };
+                    if (currentTimeMS - lastStepTime > 1100) {
+                        int stepTime{currentTimeMS - lastStepTime};
+                        Serial.printf("STEP %d: %d ms\n", stepCount, stepTime);
+                        lastStepTime = currentTimeMS;
+                        stepStartTime = currentTimeMS;
                         stepCount++;
+                        if (!cal::done) {
+                            // record step time
+                            ++cal::numSteps;
+                            if (cal::numSteps == 0) {
+                                return;
+                            }
+                            cal::totalStepTimeMS += stepTime;
+
+                            if (cal::numSteps > cal::maxSteps) {
+                                cal::done = true;
+                                cal::avgStepTime = cal::totalStepTimeMS / cal::numSteps;
+                                Serial.printf("Calibration complete! Average step time: %d ms\n", cal::avgStepTime);
+                            }
+                        }
+                    }
+                }
+
+                if (cal::done) {
+                    if (millis() - stepStartTime > cal::avgStepTime) {
+                        Serial.println("- Step expected");
+                        stepStartTime = millis();
                     }
                 }
             }

@@ -118,8 +118,8 @@ bool Axo::updateAverage() {
     float slope{m_history.getSlope()};
     // Serial.printf("%f, %f\n",m_lastSlope, slope);
 
-    if (m_lastSlope < 0) {
-        if (slope > 0) {
+    if (m_lastSlope > 0) {
+        if (slope < 0) {
             // we've hit something worth investigating!
             m_lastSlope = slope;
             return true;

@@ -218,7 +218,7 @@ void loop() {
                 // check if we've taken a step (this detects toe lift)
                 if (axo.updateAverage()) {
                     unsigned long currentMSTime{millis()};
-                    if (currentMSTime - stepStartTime > 800) {
+                    if (currentMSTime - stepStartTime > 1100) {
                         Serial.printf("STEP %d: %d milliseconds\n", stepCount, (currentMSTime - stepStartTime));
                         stepCount++;
                         stepStartTime = currentMSTime;

@@ -115,11 +115,13 @@ void Axo::printRelQuat() {
 
 bool Axo::updateAverage() {
     m_history.add(m_relQuat[3]);
+    // Serial.println(m_relQuat[3]*10);
     float slope{m_history.getSlope()};
-    // Serial.printf("%f, %f\n",m_lastSlope, slope);
+    // Serial.printf("%f, %f, %f\n",m_lastSlope, slope, 1000*m_relQuat[3]);
+    // Serial.printf("%f, %f, %f\n", 10*m_imuProp.getQuat()[3], 10*m_imuAda.getQuat()[3], 10*m_relQuat[3]);
 
-    if (m_lastSlope < 0) {
-        if (slope > 0) {
+    if (m_lastSlope > 0) {
+        if (slope < 0) {
             // we've hit something worth investigating!
             m_lastSlope = slope;
             return true;
@@ -301,9 +303,12 @@ float IMUHistory::getSlope() {
         // denominator
         denom += (m_relQuatHistory[idx] - mean)*(m_relQuatHistory[idx] - mean);
     }
-    if (denom != 0) {
+    if (abs(denom) > 0.01) {
         return num/denom;
     } else {
-        return num/0.01;
+        if (denom < 0)
+            return -num/0.01;
+        else
+            return num/0.01;
     }
 }
