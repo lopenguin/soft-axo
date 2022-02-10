@@ -17,6 +17,7 @@ namespace property {
     constexpr int FILENAME_MAX_LEN{10};
 
     constexpr float STARTUP_ACCEL_THRESH{1.5};
+    constexpr int FSR_THRESH{250};
 }
 
 namespace pin {
@@ -27,6 +28,8 @@ namespace pin {
 
     constexpr short POT_L{21};
     constexpr short POT_R{22};
+
+    constexpr short FSR{17};
 }
 
 enum class Message {

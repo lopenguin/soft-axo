@@ -113,21 +113,38 @@ void Axo::printRelQuat() {
 }
 
 
-bool Axo::updateAverage() {
-    m_history.add(m_relQuat[3]);
-    float slope{m_history.getSlope()};
-    // Serial.printf("%f, %f\n",m_lastSlope, slope);
+// bool Axo::updateAverage() {
+//     m_history.add(m_relQuat[3]);
+//     float slope{m_history.getSlope()};
+//     // Serial.printf("%f, %f\n",m_lastSlope, slope);
+//
+//     if (m_lastSlope > 0) {
+//         if (slope < 0) {
+//             // we've hit something worth investigating!
+//             m_lastSlope = slope;
+//             return true;
+//         }
+//     }
+//
+//     m_lastSlope = slope;
+//     return false;
+// }
 
-    if (m_lastSlope > 0) {
-        if (slope < 0) {
-            // we've hit something worth investigating!
-            m_lastSlope = slope;
-            return true;
+
+bool Axo::FSRStepped() {
+    bool returnVal{0};
+    // read FSR
+    int fsrVal{analogRead(pin::FSR)};
+    if (fsrVal > property::FSR_THRESH) {
+        if (!m_fsrHigh) {
+            // let user know they stepped
+            returnVal = 1;
         }
+        m_fsrHigh = 1;
+    } else {
+        m_fsrHigh = 0;
     }
-
-    m_lastSlope = slope;
-    return false;
+    return returnVal;
 }
 
 
@@ -271,39 +288,39 @@ int Axo::timeToFileSize(int runTimeSeconds, int numQuats) {
 
 
 
-void IMUHistory::add(float quat) {
-    m_relQuatHistory[m_nextIdx] = quat;
-    ++m_nextIdx;
-    if (m_nextIdx >= m_size) {
-        m_nextIdx = 0;
-    }
-}
-
-
-float IMUHistory::getSlope() {
-    // compute the mean
-    float mean{0};
-    for (int i{0}; i < m_size; ++i) {
-        mean += m_relQuatHistory[i];
-    }
-    mean /= m_size;
-
-    // compute slope
-    float num{0};
-    float denom{0};
-    for (int i{0}; i < m_size; ++i) {
-        // does oldest first
-        int idx = (m_nextIdx + i) % m_size;
-
-        // numerator
-        num += (m_relQuatHistory[idx] - mean)*(i - static_cast<int>(m_size/2));
-
-        // denominator
-        denom += (m_relQuatHistory[idx] - mean)*(m_relQuatHistory[idx] - mean);
-    }
-    if (denom != 0) {
-        return num/denom;
-    } else {
-        return num/0.01;
-    }
-}
+// void IMUHistory::add(float quat) {
+//     m_relQuatHistory[m_nextIdx] = quat;
+//     ++m_nextIdx;
+//     if (m_nextIdx >= m_size) {
+//         m_nextIdx = 0;
+//     }
+// }
+//
+//
+// float IMUHistory::getSlope() {
+//     // compute the mean
+//     float mean{0};
+//     for (int i{0}; i < m_size; ++i) {
+//         mean += m_relQuatHistory[i];
+//     }
+//     mean /= m_size;
+//
+//     // compute slope
+//     float num{0};
+//     float denom{0};
+//     for (int i{0}; i < m_size; ++i) {
+//         // does oldest first
+//         int idx = (m_nextIdx + i) % m_size;
+//
+//         // numerator
+//         num += (m_relQuatHistory[idx] - mean)*(i - static_cast<int>(m_size/2));
+//
+//         // denominator
+//         denom += (m_relQuatHistory[idx] - mean)*(m_relQuatHistory[idx] - mean);
+//     }
+//     if (denom != 0) {
+//         return num/denom;
+//     } else {
+//         return num/0.01;
+//     }
+// }

@@ -19,24 +19,24 @@ Up to date as of 1/17/2022
 #include <SPI.h>
 
 
-class IMUHistory {
-public:
-    IMUHistory() : m_relQuatHistory{}
-    {m_nextIdx = 0;}
-
-    void add(float quat);
-
-    // computes slope of best fit line
-    float getSlope();
-
-
-private:
-    static const int m_size{15};
-    float m_relQuatHistory[m_size]{};
-
-    int m_nextIdx{};
-
-};
+// class IMUHistory {
+// public:
+//     IMUHistory() : m_relQuatHistory{}
+//     {m_nextIdx = 0;}
+//
+//     void add(float quat);
+//
+//     // computes slope of best fit line
+//     float getSlope();
+//
+//
+// private:
+//     static const int m_size{15};
+//     float m_relQuatHistory[m_size]{};
+//
+//     int m_nextIdx{};
+//
+// };
 
 
 /*
@@ -52,8 +52,7 @@ public:
         m_useMotors{useMotors},
         m_fileSize{timeToFileSize(runTimeSeconds, property::NUM_QUATS)},
         m_imuProp(FXOS8700_I2C_ADDR0, FXAS21002_I2C_ADDR0),
-        m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1),
-        m_history()
+        m_imuAda(FXOS8700_I2C_ADDR3, FXAS21002_I2C_ADDR1)
     { /*Does nothing*/ }
 
     // starts up IMU and motors but not flash file.
@@ -80,7 +79,9 @@ public:
     void printRelQuat();
 
     // deals with averaging
-    bool updateAverage();
+    // bool updateAverage();
+    // handles FSR step detection
+    bool FSRStepped();
 
     const char* getSavefile() const { return m_savefile; }
 
@@ -107,8 +108,10 @@ private:
     IMUCarrier m_imuAda;
     float m_relQuat[4]{};
 
-    IMUHistory m_history;
-    float m_lastSlope{};
+    // IMUHistory m_history;
+    // float m_lastSlope{};
+
+    bool m_fsrHigh{0};
 };
 
 #endif

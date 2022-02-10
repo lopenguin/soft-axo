@@ -37,9 +37,9 @@ unsigned long startTime{};
 
 /* MOTOR CLASS */
 const int MIDDLE{1522};
-const int stepTime{1777};
-const int maxSpeed1{65};
-const int minSpeed1{40};
+int stepTime{2000};
+const int maxSpeed1{70};
+const int minSpeed1{50};
 unsigned long stepStartTime{0};
 
 class DroneMotor : public PWMServo {
@@ -116,17 +116,24 @@ private:
 
     const int MIDDLE_HIGH{1520};
     const int MIDDLE_LOW{1500};
-    const uint MAX_WRITE_TIME{250};
+    const uint MAX_WRITE_TIME{300};
 };
 
 DroneMotor motorR(pin::MOTOR_R, pin::POT_R);  // create servo object to control a servo
 DroneMotor motorL(pin::MOTOR_L, pin::POT_L);  // create servo object to control a servo
 /* END MOTOR CLASS */
 
+// for preference-based learning constants
+namespace pbl {
+    // controls how long after heel strike to actuate
+    float actuateWaitPercent{ .4 };
+}
+
 Axo axo(runTimeSeconds);
 
 void setup() {
     Serial.begin(9600);
+    Serial.setTimeout(20);
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
@@ -208,6 +215,8 @@ void loop() {
                     pinMode(LED_BUILTIN, OUTPUT);
                     while (1) {
                         blink(LED_BUILTIN);
+                        motorR.stop();
+                        motorL.stop();
                     }
                 }
                 lastIMUSaveTime = micros();
@@ -216,9 +225,10 @@ void loop() {
                 // axo.printRelQuat();
 
                 // check if we've taken a step (this detects toe lift)
-                if (axo.updateAverage()) {
+                if (axo.FSRStepped()) {
                     unsigned long currentMSTime{millis()};
-                    if (currentMSTime - stepStartTime > 1100) {
+                    if (currentMSTime - stepStartTime > 800) {
+                        stepTime = currentMSTime - stepStartTime;
                         Serial.printf("STEP %d: %d milliseconds\n", stepCount, (currentMSTime - stepStartTime));
                         stepCount++;
                         stepStartTime = currentMSTime;
@@ -234,21 +244,21 @@ void loop() {
     unsigned long currentTime = millis();
 
     // Trigger the motors for a brief period
-    if ((currentTime - stepStartTime > 0.0*stepTime) &&
-        (currentTime - stepStartTime < 0.2*stepTime)) {
+    if ((currentTime - stepStartTime > pbl::actuateWaitPercent*stepTime) &&
+        (currentTime - stepStartTime < (0.2 + pbl::actuateWaitPercent)*stepTime)) {
         // write to the motors
         motorR.write(MIDDLE - maxSpeed1, currentTime);
         motorL.write(MIDDLE + maxSpeed1, currentTime);
 
     // reset the step start time if step time is passed
-    } else if (currentTime - stepStartTime > stepTime) {
+    } else if (currentTime - stepStartTime > stepTime*1.5) {
         // reset step time
         stepStartTime = currentTime;
 
-    } else if (currentTime - stepStartTime > 0.2*stepTime) {
+    } else if (currentTime - stepStartTime > (0.2 + pbl::actuateWaitPercent)*stepTime) {
 
         // trigger a brief backwards pulse of the motors
-        if (currentTime - stepStartTime < min(0.3*stepTime, 0.2*stepTime + 150)) {
+        if (currentTime - stepStartTime < min((0.3 + pbl::actuateWaitPercent)*stepTime, (0.2 + pbl::actuateWaitPercent)*stepTime + 150)) {
             // Short backwards movement
             motorR.write(MIDDLE + minSpeed1, currentTime);
             motorL.write(MIDDLE - minSpeed1, currentTime);
@@ -261,6 +271,19 @@ void loop() {
     } else {
         motorR.stop(MIDDLE);
         motorL.stop(MIDDLE);
+    }
+
+
+    if (Serial.available()) {
+        pbl::actuateWaitPercent = Serial.parseInt();
+        if (pbl::actuateWaitPercent > 1) {
+            pbl::actuateWaitPercent = 1;
+        }
+        if (pbl::actuateWaitPercent < 0) {
+            pbl::actuateWaitPercent = 0;
+        }
+        printf("Set wait percent to %f'\n", pbl::actuateWaitPercent);
+        Serial.read();
     }
 }
 

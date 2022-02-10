@@ -129,39 +129,11 @@ void loop() {
                 // axo.printRelQuat();
 
                 // check if we've taken a step (this detects toe lift)
-                if (axo.updateAverage()) {
-                    if (!cal::begun) {
-                        Serial.println("Calibration starting! Please walk as normal.");
-                        cal::begun = true;
-                    }
-                    unsigned long currentTimeMS{ millis() };
-                    if (currentTimeMS - lastStepTime > 1100) {
-                        int stepTime{currentTimeMS - lastStepTime};
-                        Serial.printf("STEP %d: %d ms\n", stepCount, stepTime);
-                        lastStepTime = currentTimeMS;
-                        stepStartTime = currentTimeMS;
+                if (axo.FSRStepped()) {
+                    if (currentTime - lastStepTime > 800000) {
+                        Serial.printf("STEP %d: %f milliseconds\n", stepCount, (currentTime - lastStepTime)/1000.0);
+                        lastStepTime = micros();
                         stepCount++;
-                        if (!cal::done) {
-                            // record step time
-                            ++cal::numSteps;
-                            if (cal::numSteps == 0) {
-                                return;
-                            }
-                            cal::totalStepTimeMS += stepTime;
-
-                            if (cal::numSteps > cal::maxSteps) {
-                                cal::done = true;
-                                cal::avgStepTime = cal::totalStepTimeMS / cal::numSteps;
-                                Serial.printf("Calibration complete! Average step time: %d ms\n", cal::avgStepTime);
-                            }
-                        }
-                    }
-                }
-
-                if (cal::done) {
-                    if (millis() - stepStartTime > cal::avgStepTime) {
-                        Serial.println("- Step expected");
-                        stepStartTime = millis();
                     }
                 }
             }

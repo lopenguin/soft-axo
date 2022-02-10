@@ -17,10 +17,14 @@ namespace property {
     constexpr int FILENAME_MAX_LEN{10};
 
     constexpr float STARTUP_ACCEL_THRESH{1.5};
+
+    constexpr int FSR_THRESH{250};
 }
 
 namespace pin {
     constexpr short FLASH_CS{6};
+
+    constexpr short FSR{17};
 }
 
 enum class Message {
