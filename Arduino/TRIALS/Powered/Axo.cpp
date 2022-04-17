@@ -36,7 +36,7 @@ Message Axo::beginFlash(String quatFilename, String fsrFilename) {
         return Message::NO_FLASH_CHIP;
     }
     String tryfile = quatFilename + "00";
-    String tryfileFSR = fsrFilename;
+    String tryfileFSR = fsrFilename + "00";
     int number = 0;
     while (SerialFlash.exists(tryfile.c_str())) {
         // increment the number
@@ -88,7 +88,7 @@ bool Axo::started() {
 bool Axo::saveData(unsigned long timeDif) {
     // bool flashHasSpace = addBothQuatToBuf();
     bool flashHasSpace = addTimeToBuf(timeDif);
-    flashHasSpace = flashHasSpace && addRelQuatToBuf();
+    flashHasSpace = flashHasSpace && addRelQuatToBuf() && addAnglesToBuf();
     if (m_quatBufIndex >= property::FLASH_PAGE_SIZE) {
         flashHasSpace = saveFromBuf();
         m_quatBufIndex = 0;
@@ -163,11 +163,11 @@ bool Axo::addTimeToBuf(unsigned long t) {
 bool Axo::addFSRTimeToBuf(unsigned long t, char* savefile, char* buf, int& bufIdx, int& currentPos) {
     // time comes in milliseconds, convert to seconds * 10 (+ 0.8) and use 8 bit.
     uint8_t timeDif{};
-    t = t + 800;    // assume 800 ms is min. step time. This puts range at 0 -> 800, 255 -> 3350 ms
-    if (t/100 > 255) {
+    t = t - 800;    // assume 800 ms is min. step time. This puts range at 0 -> 800, 255 -> 3350 ms
+    if (t*0.12 > 255) {
         timeDif = 255;
     } else {
-        timeDif = static_cast<uint8_t>(t/100);
+        timeDif = static_cast<uint8_t>(round(t*0.12));
     }
     bool flashHasSpace = addCharToBuf(timeDif, savefile, buf, bufIdx, currentPos);
     return flashHasSpace;
@@ -259,6 +259,25 @@ bool Axo::addRelQuatToBuf() {
 }
 
 
+bool Axo::addAnglesToBuf() {
+    int motorAngleR = analogRead(pin::POT_R);
+    int motorAngleL = analogRead(pin::POT_L);
+
+    bool flashHasSpace = 1;
+    // convert from 0->1023 into uint8
+    uint8_t c1 = map(motorAngleR, 0, 1023, 0, 255);
+    uint8_t c2 = map(motorAngleL, 0, 1023, 0, 255);
+    // Serial.print(c1);
+    // Serial.print(", ");
+    // Serial.println(c2);
+
+    // write it!
+    addCharToBuf(c1);
+    flashHasSpace = addCharToBuf(c2);
+    return flashHasSpace;
+}
+
+
 bool Axo::addFSRValToBuf() {
     int fsrVal = analogRead(pin::FSR);
 
@@ -329,4 +348,10 @@ int Axo::timeToFSRFileSize(int runTimeSeconds) {
     if (fileSizeNeeded > property::FLASH_MAX_PAGES * property::FLASH_PAGE_SIZE)
         fileSizeNeeded = property::FLASH_MAX_PAGES * property::FLASH_PAGE_SIZE;
     return fileSizeNeeded;
+}
+
+
+void Axo::forceSaveAll() {
+    saveFromBuf(m_fsrSavefile, m_fsrBuf, m_currentPosFSR);
+    saveFromBuf();
 }

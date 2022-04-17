@@ -1,12 +1,7 @@
 /*
-The latest version of Axo-writing code.
+Runs the Axo with motors inactive.
 
-Uses FSRs to detect state, uses step time to trigger assitance.
-Implements safe control of motors.
-
-Quaternions and FSR data is saved! (not finished)
-
-Lorenzo Shaikewitz, 2/9/2022
+Lorenzo Shaikewitz, 2/18/2022
 */
 
 #include <NXPMotionSense_Lorenzo.h>
@@ -51,13 +46,13 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
-    // MOTOR SETUP
-    motorR.attach(); // some motors need min/max setting
-    motorL.attach(); // some motors need min/max setting
-    delay(1000);
-    motorR.writeMicroseconds(1500);
-    motorL.writeMicroseconds(1500);
-    delay(2000);
+    // // MOTOR SETUP
+    // motorR.attach(); // some motors need min/max setting
+    // motorL.attach(); // some motors need min/max setting
+    // delay(1000);
+    // motorR.writeMicroseconds(1500);
+    // motorL.writeMicroseconds(1500);
+    // delay(2000);
 
     axo.begin();
     // startup condition: wait for high boot tap.
@@ -161,39 +156,39 @@ void loop() {
 
 
     // MOTOR WRITING
-    if (!firstTime) {
-        unsigned long currentTime = millis();
-
-        // Trigger the motors for a brief period
-        if ((currentTime - stepStartTime > pbl::actuateWaitPercent*stepTime) &&
-            (currentTime - stepStartTime < (0.2 + pbl::actuateWaitPercent)*stepTime)) {
-            // write to the motors
-            motorR.write(MIDDLE - maxSpeed1, currentTime);
-            motorL.write(MIDDLE + maxSpeed1, currentTime);
-
-        // reset the step start time if step time is passed
-        } else if (currentTime - stepStartTime > stepTime*1.5) {
-            // reset step time
-            stepStartTime = currentTime;
-
-        } else if (currentTime - stepStartTime > (0.2 + pbl::actuateWaitPercent)*stepTime) {
-
-            // trigger a brief backwards pulse of the motors
-            if (currentTime - stepStartTime < min((0.3 + pbl::actuateWaitPercent)*stepTime, (0.2 + pbl::actuateWaitPercent)*stepTime + 150)) {
-                // Short backwards movement
-                motorR.write(MIDDLE + minSpeed1, currentTime);
-                motorL.write(MIDDLE - minSpeed1, currentTime);
-            } else {
-                motorR.stop();
-                motorL.stop();
-            }
-
-        // otherwise, stop the motors
-        } else {
-            motorR.stop(MIDDLE);
-            motorL.stop(MIDDLE);
-        }
-    }
+    // if (!firstTime) {
+    //     unsigned long currentTime = millis();
+    //
+    //     // Trigger the motors for a brief period
+    //     if ((currentTime - stepStartTime > pbl::actuateWaitPercent*stepTime) &&
+    //         (currentTime - stepStartTime < (0.2 + pbl::actuateWaitPercent)*stepTime)) {
+    //         // write to the motors
+    //         motorR.write(MIDDLE - maxSpeed1, currentTime);
+    //         motorL.write(MIDDLE + maxSpeed1, currentTime);
+    //
+    //     // reset the step start time if step time is passed
+    //     } else if (currentTime - stepStartTime > stepTime*1.5) {
+    //         // reset step time
+    //         stepStartTime = currentTime;
+    //
+    //     } else if (currentTime - stepStartTime > (0.2 + pbl::actuateWaitPercent)*stepTime) {
+    //
+    //         // trigger a brief backwards pulse of the motors
+    //         if (currentTime - stepStartTime < min((0.3 + pbl::actuateWaitPercent)*stepTime, (0.2 + pbl::actuateWaitPercent)*stepTime + 150)) {
+    //             // Short backwards movement
+    //             motorR.write(MIDDLE + minSpeed1, currentTime);
+    //             motorL.write(MIDDLE - minSpeed1, currentTime);
+    //         } else {
+    //             motorR.stop();
+    //             motorL.stop();
+    //         }
+    //
+    //     // otherwise, stop the motors
+    //     } else {
+    //         motorR.stop(MIDDLE);
+    //         motorL.stop(MIDDLE);
+    //     }
+    // }
 
 
     if (Serial.available()) {

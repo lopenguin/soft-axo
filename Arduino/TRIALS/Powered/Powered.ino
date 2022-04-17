@@ -1,12 +1,7 @@
 /*
-The latest version of Axo-writing code.
+Runs the Axo with motors active.
 
-Uses FSRs to detect state, uses step time to trigger assitance.
-Implements safe control of motors.
-
-Quaternions and FSR data is saved! (not finished)
-
-Lorenzo Shaikewitz, 2/9/2022
+Lorenzo Shaikewitz, 2/18/2022
 */
 
 #include <NXPMotionSense_Lorenzo.h>
@@ -25,12 +20,14 @@ Lorenzo Shaikewitz, 2/9/2022
 
 String QUAT_FILE_NAME{"q"};
 String FSR_FILE_NAME{"f"};
-const int runTimeSeconds{300};
+const int runTimeSeconds{420}; // set to 420
 unsigned long startTime{};
 
 /* MOTOR STUFF */
+const int stepWaitTime{2500};
 int stepTime{2000};
 unsigned long stepStartTime{0};
+
 bool firstTime{1};
 
 DroneMotor motorR(pin::MOTOR_R, pin::POT_R);  // create servo object to control a servo
@@ -50,6 +47,7 @@ void setup() {
     Serial.setTimeout(20);
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
+    pinMode(pin::BUTTON, INPUT_PULLUP);
 
     // MOTOR SETUP
     motorR.attach(); // some motors need min/max setting
@@ -60,6 +58,8 @@ void setup() {
     delay(2000);
 
     axo.begin();
+    // motorR.stop();
+    // motorL.stop();
     // startup condition: wait for high boot tap.
     while (true && !Serial) {
         if (axo.propIMUAvail()) {
@@ -67,6 +67,10 @@ void setup() {
             if (axo.started())
                 // exit!
                 break;
+        }
+
+        if (digitalRead(pin::BUTTON) == LOW) {
+            break;
         }
         delay(10);
     }
@@ -125,17 +129,22 @@ void loop() {
             if (currentTime - startTime > 5000000) {
                 if (!axo.saveData(currentTime - lastIMUSaveTime)) {
                     Serial.println("File space exceeded.");
+                    motorR.stop();
+                    motorL.stop();
+                    delay(500);
+                    axo.forceSaveAll();
                     pinMode(LED_BUILTIN, OUTPUT);
                     while (1) {
                         blink(LED_BUILTIN);
                         motorR.stop();
                         motorL.stop();
+
                     }
                 }
                 // make sure the FSR zero time and the quaternion zero time match up.
                 if (firstTime) {
                     firstTime = 0;
-                    axo.saveFSR(0);
+                    axo.saveFSR(800);
                     stepStartTime = 0;
                 }
                 lastIMUSaveTime = micros();
@@ -152,6 +161,22 @@ void loop() {
                         Serial.printf("STEP %d: %d milliseconds\n", stepCount, (currentMSTime - stepStartTime));
                         stepCount++;
                         stepStartTime = currentMSTime;
+                    }
+                }
+
+
+                // stop
+                if (digitalRead(pin::BUTTON) == LOW) {
+                    Serial.println("STOPPED!");
+                    motorR.stop();
+                    motorL.stop();
+                    delay(500);
+                    axo.forceSaveAll();
+                    pinMode(LED_BUILTIN, OUTPUT);
+                    while (1) {
+                        blink(LED_BUILTIN);
+                        motorR.stop();
+                        motorL.stop();
                     }
                 }
             }
@@ -172,14 +197,15 @@ void loop() {
             motorL.write(MIDDLE + maxSpeed1, currentTime);
 
         // reset the step start time if step time is passed
-        } else if (currentTime - stepStartTime > stepTime*1.5) {
+        } else if (currentTime - stepStartTime > stepWaitTime) {
             // reset step time
+            axo.saveFSR(currentTime - stepStartTime);
             stepStartTime = currentTime;
 
         } else if (currentTime - stepStartTime > (0.2 + pbl::actuateWaitPercent)*stepTime) {
 
             // trigger a brief backwards pulse of the motors
-            if (currentTime - stepStartTime < min((0.3 + pbl::actuateWaitPercent)*stepTime, (0.2 + pbl::actuateWaitPercent)*stepTime + 150)) {
+            if (currentTime - stepStartTime < (0.45 + pbl::actuateWaitPercent)*stepTime) {
                 // Short backwards movement
                 motorR.write(MIDDLE + minSpeed1, currentTime);
                 motorL.write(MIDDLE - minSpeed1, currentTime);
@@ -197,7 +223,7 @@ void loop() {
 
 
     if (Serial.available()) {
-        pbl::actuateWaitPercent = Serial.parseInt();
+        pbl::actuateWaitPercent = Serial.parseFloat();
         if (pbl::actuateWaitPercent > 1) {
             pbl::actuateWaitPercent = 1;
         }

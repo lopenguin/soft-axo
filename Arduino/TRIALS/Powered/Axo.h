@@ -63,6 +63,7 @@ public:
     // bool updateAverage();
     // handles FSR step detection
     bool FSRStepped();
+    void forceSaveAll();
 
     const char* getQuatSavefile() const { return m_quatSavefile; }
     const char* getFSRSavefile() const { return m_fsrSavefile; }
@@ -74,6 +75,7 @@ private:
     bool addCharToBuf(char c);  // does buf size checking, calls saveFromBuf if buf full
     bool saveFromBuf();
     bool addTimeToBuf(unsigned long t);
+    bool addAnglesToBuf();
 
     // general version
     bool addCharToBuf(char c, char* savefile, char* buf, int& bufIdx, int& currentPos);

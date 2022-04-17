@@ -1,5 +1,5 @@
 const int fsrPin{17};
-const int stepThresh{250};  // threshold for heel contact
+const int stepThresh{450};  // threshold for heel contact
 
 bool fsrTriggered{0};
 int stepCount{0};
@@ -7,10 +7,12 @@ unsigned long stepStartTime{0};
 
 void setup() {
   stepStartTime = millis();
+//  pinMode(fsrPin, INPUT);
 }
 
 void loop() {
   int fsrVal = analogRead(fsrPin);
+//  Serial.println(fsrVal);
   if (fsrVal > stepThresh) {
 //    Serial.print(600);
     if (!fsrTriggered) {
