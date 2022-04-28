@@ -23,8 +23,8 @@ namespace pin {
     constexpr short POT_R{14};
 
     // LEDs and e-stop
-    constexpr short LED1{6};
-    constexpr short LED2{7};
+    constexpr short LEDB{6};
+    constexpr short LEDG{7};
     constexpr short ESTOP{23};
 }
 
