@@ -10,6 +10,7 @@ Lorenzo Shaikewitz, 4/17/2022
 #define SerialOut Serial    // for serial monitor
 // #define SerialOut Serial1   // for Wixel streaming
 
+constexpr int BAUD{57600};
 
 namespace pin {
     // ESCs

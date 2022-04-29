@@ -32,10 +32,10 @@ public:
     /* SENSOR FUNCTIONS */
     // starts up IMU, FSR, load cell, AND motor pots.
     // Freezes if any sensor fails to initialize. Call once in setup().
-    bool beginSensors();
+    void begin();
     // reads IMU, FSR, and load cell (NO motor pots). Uses metro timers, so
     // call repeatedly in loop (no delays needed)
-    bool readSensors();
+    void readSensors();
 
 private:
     // Metro timers (for sensors)
@@ -45,6 +45,10 @@ private:
 
     // Interrupt timer (for motor)
     IntervalTimer m_timerMotor;
+
+    // IMU objects
+    Adafruit_BNO055 m_shinIMU = Adafruit_BNO055(BNO055_ID, 0x29);
+    Adafruit_BNO055 m_footIMU = Adafruit_BNO055(BNO055_ID, 0x28);
 };
 
 #endif
