@@ -18,9 +18,13 @@ public:
     Axo() : m_timerIMU{timers::IMU},
             m_timerFSR{timers::FSR},
             m_timerLoad{timers::LOAD},
-            m_timerMotor{}
+            m_timerMotor{},
+            m_sensorVals{}
     {/*does nothing*/}
 
+
+    void setGreenLED(int val) {digitalWrite(pin::LEDG, val);}
+    void setBlueLED(int val) {digitalWrite(pin::LEDB, val);}
 
     /* MOTOR FUNCTIONS */
     // starts up motors and potentiometer interrupt routine
@@ -49,6 +53,24 @@ private:
     // IMU objects
     Adafruit_BNO055 m_shinIMU = Adafruit_BNO055(BNO055_ID, 0x29);
     Adafruit_BNO055 m_footIMU = Adafruit_BNO055(BNO055_ID, 0x28);
+
+    // SENSOR OBJECTS
+    // IMU: quats and calibration
+    imu::Quaternion m_quatShin{};
+    uint8_t m_quatCalShin[4]{};
+
+    imu::Quaternion m_quatFoot{};
+    uint8_t m_quatCalFoot[4]{};
+
+    // FSR
+    unsigned int m_fsrVal{};
+
+    // Load cell
+    unsigned int m_loadCellVal{};
+
+
+    // SENSOR PRINT FUNCTIONS
+    void printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel);
 };
 
 #endif

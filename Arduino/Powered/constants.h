@@ -6,6 +6,8 @@ Lorenzo Shaikewitz, 4/17/2022
 #ifndef AXO_CONSTANTS_H
 #define AXO_CONSTANTS_H
 
+#include <Arduino.h>
+
 // Serial definition
 #define SerialOut Serial    // for serial monitor
 // #define SerialOut Serial1   // for Wixel streaming
