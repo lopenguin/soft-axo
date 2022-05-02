@@ -20,6 +20,7 @@ void setup() {
         if (SerialOut.available()) {
             
         }
+        delay(100);
     }
 
 }

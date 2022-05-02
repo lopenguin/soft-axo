@@ -58,11 +58,11 @@ void loop() {
         uint8_t sys, gyr, acc, mag;
         myIMU.getCalibration(&sys, &gyr, &acc, &mag);
 
-        SerialOut.printf("System: %d, Gyro: %d, Accel: %d, Mag: %d",
+        SerialOut.printf("System: %d, Gyro: %d, Accel: %d, Mag: %d\n",
                             sys, gyr, acc, mag);
 
         // check if the system is well calibrated
-        if (sys == 3) {
+        if ((sys == 3 && gyr == 3) && (acc == 3 && mag == 3)) {
             SerialOut.println("---");
             SerialOut.println("Calibration Complete!");
 
@@ -71,12 +71,12 @@ void loop() {
             myIMU.getSensorOffsets(offsets);
 
             // write out the offset code
-            SerialOut.printf("adafruit_bno055_offsets_t offsets{"
-                "%d, %d, %d, // accel offsets\n"
-                "%d, %d, %d, // mag offsets\n"
-                "%d, %d, %d, // gyro offsets\n"
-                "%d,         // accel radius\n"
-                "%d          // mag radius\n"
+            SerialOut.printf("adafruit_bno055_offsets_t offsets{\n"
+                "    %d, %d, %d, // accel offsets\n"
+                "    %d, %d, %d, // mag offsets\n"
+                "    %d, %d, %d, // gyro offsets\n"
+                "    %d,         // accel radius\n"
+                "    %d          // mag radius\n"
                 "};\n",
                 offsets.accel_offset_x, offsets.accel_offset_y, offsets.accel_offset_z,
                 offsets.mag_offset_x, offsets.mag_offset_y, offsets.mag_offset_z,
@@ -85,7 +85,10 @@ void loop() {
                 offsets.mag_radius);
 
             // pause.. calibration is complete.
-            while (1);
+            while (1) {
+                if (Serial.available())
+                    break;
+            }
         }
     }
 }

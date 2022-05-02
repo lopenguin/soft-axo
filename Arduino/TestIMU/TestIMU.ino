@@ -22,7 +22,14 @@ Lorenzo Shaikewitz, 4/17/2022
 
 // Constants
 uint16_t SAMPLERATE{100}; // Hz
-adafruit_bno055_offsets_t shinOffsets{};
+adafruit_bno055_offsets_t shinOffsets{
+    10, -56, -10, // accel offsets
+    345, 217, -83, // mag offsets
+    0, 0, -2, // gyro offsets
+    1000,         // accel radius
+    766          // mag radius
+};
+
 adafruit_bno055_offsets_t footOffsets{};
 
 // IMU data structure

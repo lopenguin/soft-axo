@@ -6,6 +6,7 @@ Lorenzo Shaikewitz, 4/25/2022
 #include "Axo.h"
 #include "constants.h"
 #include <Arduino.h>
+#include <IntervalTimer.h>  // for servos
 
 // IMU
 #include <Adafruit_Sensor.h>
@@ -14,11 +15,73 @@ Lorenzo Shaikewitz, 4/25/2022
 
 
 /* MOTOR FUNCTIONS */
-bool Axo::beginMotors() {
-    // start up motors (TODO)
+static IntervalTimer motorTimer;
+static volatile bool useISR{};
+static volatile int prevPotL{};
+static volatile int prevPotR{};
+static unsigned int targetAngle{};
+
+void Axo::beginMotors() {
+    // start up motor servo branches
+    m_leftMotor.attach(pin::ESC_L);
+    m_rightMotor.attach(pin::ESC_R);
+
+    delay(1000);
+
+    m_leftMotor.writeMicroseconds(motor::CAL_PWM);
+    m_rightMotor.writeMicroseconds(motor::CAL_PWM);
+
+    delay(motor::CAL_DELAY);
+
+    // start up the motor timer (with low priority)
+    motorTimer.begin(motorISR, timer::MOTOR_US);
+    motorTimer.priority(0xFF);
+}
+
+void Axo::setAngle(int val) {
+    // turn on the interrupt
+    useISR = true;
+    targetAngle = val;
+}
 
 
-    m_timerMotor.begin(motorInterrupt, timer::MOTOR_US);
+void motorISR(void) {
+    if (!useISR)
+        return;
+    
+    // read potentiometers
+    int currPotL = digitalRead(pin::POT_L);
+    int currPotR = digitalRead(pin::POT_R);
+
+    // check for a full rotation
+    // LEFT
+    if ((currPotL - prevPotL < -motor::NOISE_JUMP))
+        ++turnsL;
+    else if ((currPotL - prevPotL > motor::NOISE_JUMP))
+        --turnsL;
+    prevPotL = currPotL;
+    // RIGHT
+    if ((currPotR - prevPotR < -motor::NOISE_JUMP))
+        ++turnsR;
+    else if ((currPotR - prevPotR > motor::NOISE_JUMP))
+        --turnsR;
+    prevPotR = currPotR;
+
+    // use p control to compute target
+    lPWM = p(targetAngle, currPotL + 1023*turnsL);
+    rPWM = p(targetAngle, currPotR + 1023*turnsR);
+    
+    m_leftMotor.writeMicroseconds(lPWM);
+    m_rightMotor.witeMicroseconds(rPWM);
+}
+
+int p(int desired, int curr) {
+    curr = max(0, min(1023, curr)   // make sure current position is bounded
+
+    int ret = 1500 + (desired - curr) * motor::K_P);
+    ret += pow(motor::E,1 / (motor::C * curr));
+    ret -= pow(motor::E, 1 / (motor::C * (motor::POT_MAX - curr)));
+    return min(motor::MAX_FORWARD, max(motor::MAX_BACKWARD, ret));
 }
 
 
@@ -49,6 +112,10 @@ void Axo::begin() {
     // set up external crystal for optimal performance
     m_shinIMU.setExtCrystalUse(true);
     m_footIMU.setExtCrystalUse(true);
+
+    // set IMU offsets
+    m_shinIMU.setSensorOffsets(offsets::shin);
+    m_footIMU.setSensorOffsets(offsets::foot);
 
     // Switch to NDOF mode--use all 9 DOFs, 100 Hz fusion data
     m_shinIMU.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);

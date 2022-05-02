@@ -9,17 +9,17 @@ Lorenzo Shaikewitz, 4/19/2022
 
 #include <Arduino.h>
 #include <Metro.h>  // easy timers
-#include <IntervalTimer.h>  // precise interrupt timer
+#include <Servo.h>
 
 #include "constants.h"
+
+void motorISR(void);
 
 class Axo {
 public:
     Axo() : m_timerIMU{timers::IMU},
             m_timerFSR{timers::FSR},
-            m_timerLoad{timers::LOAD},
-            m_timerMotor{},
-            m_sensorVals{}
+            m_timerLoad{timers::LOAD}
     {/*does nothing*/}
 
 
@@ -27,10 +27,15 @@ public:
     void setBlueLED(int val) {digitalWrite(pin::LEDB, val);}
 
     /* MOTOR FUNCTIONS */
-    // starts up motors and potentiometer interrupt routine
-    bool beginMotors();
+    // starts up motors
+    void beginMotors();
+    // Sets motor desired angle and starts interrupt routine.
+    void setAngle(int val);
     // Ends motor interrupts (use when changing desired trajectory)
-    bool stopMotors();
+    void stopMotors();
+    // disconnects motors completely
+    void detachMotors();
+
 
 
     /* SENSOR FUNCTIONS */
@@ -47,8 +52,11 @@ private:
     Metro m_timerFSR;
     Metro m_timerLoad;
 
-    // Interrupt timer (for motor)
-    IntervalTimer m_timerMotor;
+    // Servo objects (for motors). Static for ISR access
+    static Servo m_leftMotor;
+    static Servo m_rightMotor;
+    // ISR friend
+    friend void motorISR();
 
     // IMU objects
     Adafruit_BNO055 m_shinIMU = Adafruit_BNO055(BNO055_ID, 0x29);
