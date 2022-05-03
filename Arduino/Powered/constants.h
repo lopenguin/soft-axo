@@ -22,8 +22,8 @@ constexpr int BAUD{57600};
 
 namespace pin {
     // ESCs
-    constexpr short ESC_L{3};
-    constexpr short ESC_R{4};
+    constexpr short ESC_L{4};
+    constexpr short ESC_R{3};
 
     // sensors
     constexpr short FSR{16};
@@ -52,6 +52,15 @@ namespace motor {
     constexpr unsigned int CAL_DELAY{7000}; // ms
 
     constexpr int NOISE_JUMP = 500;         // minimum jump in potentiometer values to define a whole turn
+
+    // CONTROL CONSTANTS
+    constexpr double C = 0.005;             // see Desmos graph for intuition for C
+    constexpr double E = 2.71828;           // the natural constant e
+    constexpr double K_p = 0.7;             // proportional control constant
+    constexpr int MAX_FORWARD = 1600;       // maximum permitted forward PWM (m_f)
+    constexpr int MAX_BACKWARD = 1400;      // maximum permitted backward PWM (m_b)
+    constexpr int CENTER = 1500;
+    constexpr int LOWMS_THRESHOLD{20};
 }
 
 

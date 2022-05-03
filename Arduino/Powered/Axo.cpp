@@ -36,12 +36,30 @@ void Axo::beginMotors() {
     // start up the motor timer (with low priority)
     motorTimer.begin(motorISR, timer::MOTOR_US);
     motorTimer.priority(0xFF);
+    useISR = false;
 }
 
 void Axo::setAngle(int val) {
     // turn on the interrupt
     useISR = true;
     targetAngle = val;
+}
+
+void Axo::stopMotors() {
+    // turn off interrupt
+    useISR = false;
+    m_leftMotor.writeMicroseconds(motor::CENTER);
+    m_rightMotor.writeMicroseconds(motor::CENTER);
+}
+
+void Axo::detachMotors() {
+    // stop motors
+    stopMotors();
+    // end the motor interrupt timer
+    motorTimer.end();
+    // detach the servos
+    m_leftMotor.detach();
+    m_rightMotor.detach();
 }
 
 
@@ -68,11 +86,19 @@ void motorISR(void) {
     prevPotR = currPotR;
 
     // use p control to compute target
-    lPWM = p(targetAngle, currPotL + 1023*turnsL);
-    rPWM = p(targetAngle, currPotR + 1023*turnsR);
+    lMS = p(targetAngle, currPotL + 1023*turnsL);
+    rMS = p(targetAngle, currPotR + 1023*turnsR);
+
+    // check if we are sufficiently close to goal (TODO: TEST!!! dangerous)
+    // if ((abs(lMS - motor::CENTER) < motor::LOWMS_THRESHOLD) && (abs(rMS - motor::CENTER) < motor::LOWMS_THRESHOLD) {
+    //     // stop motors and turn off interrupt
+    //     lMS = motor::CENTER;
+    //     rMS = motor::CENTER;
+    //     useISR = false;
+    // }
     
-    m_leftMotor.writeMicroseconds(lPWM);
-    m_rightMotor.witeMicroseconds(rPWM);
+    m_leftMotor.writeMicroseconds(lMS);
+    m_rightMotor.witeMicroseconds(rMS);
 }
 
 int p(int desired, int curr) {

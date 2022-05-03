@@ -9,8 +9,10 @@
 
 
 // CONSTANTS-------------------------------------------------------------------
-const int MOTOR_PIN = 4;
-const int ENCODER_PIN = A8;
+//const int MOTOR_PIN = 4;
+//const int ENCODER_PIN = 15;
+const int MOTOR_PIN = 3;
+const int ENCODER_PIN = 14;
 
 // ESC CONSTANTS
 const int CALIBRATION_PWM = 1500;
@@ -70,7 +72,7 @@ void loop() {
   motor.writeMicroseconds(p(goal));
 
   // Read and interpret current pot position. Try to estimate if a whole turn has occurred
-  curr = (int)analogRead(A8);
+  curr = analogRead(ENCODER_PIN);
   if (curr - prev < -1 * NOISE_JUMP) {
     turns++;
   } else if (curr - prev > NOISE_JUMP) {
@@ -80,6 +82,7 @@ void loop() {
 
   // Print and wait
   print_info();
+//  Serial.println(analogRead(ENCODER_PIN));
   delay(1000.0 / CONTROL_RATE);
 }
 
