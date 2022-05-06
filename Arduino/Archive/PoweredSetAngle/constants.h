@@ -27,10 +27,6 @@ Lorenzo Shaikewitz, 4/17/2022
 
 constexpr int BAUD{57600};
 
-namespace control {
-    constexpr int FSR_THRESH{450};
-}
-
 namespace pin {
     // ESCs
     constexpr short ESC_L{4};
@@ -69,7 +65,7 @@ namespace motor {
     constexpr int POT_MAX{ 1023 };
     constexpr int POT_MIN{ 0 };
 
-    // (low-level) CONTROL CONSTANTS
+    // CONTROL CONSTANTS
     constexpr double C = 0.005;             // see Desmos graph for intuition for C
     constexpr double E = 2.71828;           // the natural constant e
     constexpr double K_P = 0.7;             // proportional control constant
@@ -77,10 +73,6 @@ namespace motor {
     constexpr int MAX_BACKWARD = 1400;      // maximum permitted backward PWM (m_b)
     constexpr int CENTER = 1500;
     constexpr int LOWMS_THRESHOLD{20};
-
-    // left and right motor constants
-    constexpr int LZERO{923};
-    constexpr int RZERO{100};
 }
 
 

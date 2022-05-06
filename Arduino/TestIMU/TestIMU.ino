@@ -80,8 +80,8 @@ void setup() {
     footIMU.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
 
     // Calibration setup
-    shinIMU.setSensorOffsets(shinOffsets);
-    footIMU.setSensorOffsets(footOffsets);
+    // shinIMU.setSensorOffsets(shinOffsets);
+    // footIMU.setSensorOffsets(footOffsets);
 
     // one more delay just to be safe
     delay(1000);

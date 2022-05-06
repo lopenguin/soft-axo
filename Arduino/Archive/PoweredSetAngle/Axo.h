@@ -39,6 +39,7 @@ public:
     void detachMotors();
 
 
+
     /* MISC FUNCTIONS */
     // starts up IMU, FSR, load cell, AND motor pots.
     // Freezes if any sensor fails to initialize. Call once in setup().
@@ -50,11 +51,6 @@ public:
 
     // prints a heartbeat to the console
     void heartbeat();
-
-
-    /* CONTROL FUNCTIONS */
-    unsigned long getStepTime() {return m_lastStepTime; }
-    unsigned long getStepStartTime() { return m_stepStartTime; }
 
 private:
     // Metro timers (for sensors)
@@ -99,11 +95,6 @@ private:
 
     // SENSOR PRINT FUNCTIONS
     void printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel);
-
-
-    // FOR CONTROL
-    unsigned long m_lastStepTime{};
-    unsigned long m_stepStartTime{};
 };
 
 #endif

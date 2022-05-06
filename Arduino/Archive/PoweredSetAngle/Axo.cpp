@@ -215,18 +215,6 @@ void Axo::spin() {
         #ifndef SUPPRESS_FSR
         SerialOut.printf("FSR,%u\n", m_fsrVal);
         #endif
-
-        // FOR CONTROL
-        if (m_fsrVal > control::FSR_THRESH) {
-            // step detected
-            unsigned long currentTime = millis();
-            m_lastStepTime = currentTime - m_stepStartTime;
-            m_stepStartTime = millis();
-
-            #ifndef SUPPRESS_LOG
-            SerialOut.printf("LOG,Step detected!\n");
-            #endif
-        }
     }
 
     if (m_timerLoad.check()) {

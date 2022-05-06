@@ -3,11 +3,12 @@ Main code to run the ankle exoskeleton. Sensor gathering/printing, low-level
 motor control, and other secondary functions are abstracted into the Axo class.
 This file focuses on the high-level control scheme.
 
+ARCHIVED VERSION: ONLY SETS ANGLES
+
 Lorenzo Shaikewitz, 4/19/2022
 */
 #include "Axo.h"
 #include "constants.h"
-#include "curves.h"
 #include <Metro.h>
 
 Axo axo;
@@ -46,11 +47,7 @@ void setup() {
 void loop() {
     // angle control updating
     if (controlTimer.check()) {
-        unsigned long currentTime = millis();
-        unsigned long timeDiff = currentTime - axo.getStepStartTime();
-
-        // execute control
-        bangBangAtPushoff(axo, timeDiff, axo.getStepStartTime());
+        axo.setAngle(angle);
     }
 
     axo.spin();
