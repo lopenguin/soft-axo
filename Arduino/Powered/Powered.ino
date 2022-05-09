@@ -14,6 +14,7 @@ Axo axo;
 
 Metro controlTimer{20}; // 50 Hz
 unsigned long startTime{};
+unsigned long stepTime{2000};
 bool fsrHigh{};
 
 void setup() {
@@ -53,14 +54,19 @@ void loop() {
         unsigned long dt = currentTime - startTime;
 
         // execute control
-        bangBangAtPushoff(axo, dt, startTime);
+        bangBangAtPushoff(axo, dt, stepTime);
 
         // check the FSR for a step
-        fsr = axo.getFSR();
+        int fsr = axo.getFSR();
         if (fsr > control::FSR_THRESH) {
             // want to record only the first heel strike
             if (!fsrHigh) {
+                fsrHigh = true;
+                stepTime = dt;
                 startTime = currentTime;
+                #ifndef SUPPRESS_LOG
+                SerialOut.printf("Step Recorded! %u\n", dt);
+                #endif
             }
         } else {
             fsrHigh = false;

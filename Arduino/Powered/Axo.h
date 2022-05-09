@@ -39,8 +39,8 @@ public:
     void stopMotors();      // turns motors off without disconnecting them
     void detachMotors();    // disconnects motors/motor pins
 
-    void getFSR()   { return m_fsrVal; }
-    void getLoad()  { return m_loadCellVal; }
+    int getFSR()   { return m_fsrVal; }
+    int getLoad()  { return m_loadCellVal; }
 
 private:
     // Metro timers (for sensors)
