@@ -33,6 +33,12 @@ void Axo::beginMotors() {
     // make sure the motor starts off
     m_useMotorMetro = false;
 
+    // reset the turns counters
+    m_prevPotL = analogRead(pin::POT_L);
+    m_prevPotR = analogRead(pin::POT_R);
+    m_turnsL = 0;
+    m_turnsR = 0;
+
     #ifndef SUPPRESS_LOG
     SerialOut.println("LOG,Motors started.");
     #endif
@@ -105,8 +111,9 @@ void Axo::updateMotors() {
     Axo::m_rightMotor.writeMicroseconds(rMS);
 
     #ifndef SUPPRESS_MOTOR
-    SerialOut.printf("MOTOR, (%u, %u), (%u, %u), (%u, %u)\n", 
+    SerialOut.printf("MOTOR,(%u, %u),(%u, %u),(%u, %u),(%u, %u)\n", 
                     currPotL, currPotR,
+                    currPotL + 1023*m_turnsL, currPotR + 1023*m_turnsR,
                     m_targetAngleL, m_targetAngleR,
                     lMS, rMS);
     #endif
@@ -266,5 +273,5 @@ void Axo::printKey() {
 
     SerialOut.println("FSR,analog reading (0->1023)");
     SerialOut.println("LOAD,analog reading (0->1023)");
-    SerialOut.println("MOTOR,current potentiometer reading (L, R),target potentiometer reading (L, R),microseconds command (L, R)");
+    SerialOut.println("MOTOR,current potentiometer reading (L, R),adjusted current potentiometer reading (L, R),target potentiometer reading (L, R),microseconds command (L, R)");
 }
