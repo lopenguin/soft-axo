@@ -14,7 +14,7 @@ NUM_GRAPHS = GRAPH_ROWS * GRAPH_COLUMNS
 PORTS = ['/dev/cu.usbmodem141201']
 
 
-types =     [Com,
+types =     [SimpleVisualization,
             ]
 
 args =      [[COM1],
