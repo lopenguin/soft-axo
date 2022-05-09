@@ -47,7 +47,8 @@ void Axo::beginMotors() {
 void Axo::setAngle(int val) {
     // turn on the interrupt
     m_useMotorMetro = true;
-    m_targetAngle = val;
+    m_targetAngleL = motor::LZERO - val;
+    m_targetAngleR = motor::RZERO + val;
 }
 
 void Axo::stopMotors() {
@@ -89,8 +90,8 @@ void Axo::updateMotors() {
     m_prevPotR = currPotR;
 
     // use p control to compute target
-    int lMS{ p(m_targetAngle, currPotL + 1023*m_turnsL) };
-    int rMS{ p(m_targetAngle, currPotR + 1023*m_turnsR) };
+    int lMS{ p(m_targetAngleL, currPotL + 1023*m_turnsL) };
+    int rMS{ p(m_targetAngleR, currPotR + 1023*m_turnsR) };
 
     // check if we are sufficiently close to goal (TODO: TEST!!! dangerous)
     // if ((abs(lMS - motor::CENTER) < motor::LOWMS_THRESHOLD) && (abs(rMS - motor::CENTER) < motor::LOWMS_THRESHOLD) {
@@ -106,7 +107,7 @@ void Axo::updateMotors() {
     #ifndef SUPPRESS_MOTOR
     SerialOut.printf("MOTOR, (%u, %u), (%u, %u), (%u, %u)\n", 
                     currPotL, currPotR,
-                    m_targetAngle, m_targetAngle,
+                    m_targetAngleL, m_targetAngleR,
                     lMS, rMS);
     #endif
 }

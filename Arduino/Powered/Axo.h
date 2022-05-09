@@ -24,37 +24,23 @@ public:
             m_timerHeartbeat{timer::HEARTBEAT}
     {/*does nothing*/}
 
+    void begin(bool useIMUOffsets = true);  // starts up sensors. Call once in setup()
+    void beginMotors();                     // starts up motors. Call once in setup()
+
+    void printKey();        // prints sensor output key
+    void heartbeat();       // prints a "heartbeat" (current time every 2 seconds)
 
     void setGreenLED(int val) {digitalWrite(pin::LEDG, val);}
     void setBlueLED(int val) {digitalWrite(pin::LEDB, val);}
 
-    /* MOTOR FUNCTIONS */
-    // starts up motors
-    void beginMotors();
-    // Sets motor desired angle and starts interrupt routine.
-    void setAngle(int val);
-    // Ends motor interrupts (use when changing desired trajectory)
-    void stopMotors();
-    // disconnects motors completely
-    void detachMotors();
+    void spin();            // Reads all metro timers. Call in loop().
 
+    void setAngle(int val); // sets motor desired angle. 100 is neutral. Range: (0, 800)
+    void stopMotors();      // turns motors off without disconnecting them
+    void detachMotors();    // disconnects motors/motor pins
 
-    /* MISC FUNCTIONS */
-    // starts up IMU, FSR, load cell, AND motor pots.
-    // Freezes if any sensor fails to initialize. Call once in setup().
-    void begin(bool useIMUOffsets = true);
-    void printKey();
-
-    // Reads all metro timing functions and sets motor commands
-    void spin();
-
-    // prints a heartbeat to the console
-    void heartbeat();
-
-
-    /* CONTROL FUNCTIONS */
-    unsigned long getStepTime() {return m_lastStepTime; }
-    unsigned long getStepStartTime() { return m_stepStartTime; }
+    void getFSR()   { return m_fsrVal; }
+    void getLoad()  { return m_loadCellVal; }
 
 private:
     // Metro timers (for sensors)
@@ -71,7 +57,8 @@ private:
     // Motor update helper
     void updateMotors();
     bool m_useMotorMetro{};
-    int m_targetAngle{};
+    int m_targetAngleL{};
+    int m_targetAngleR{};
     
     int m_prevPotL{};
     int m_prevPotR{};
@@ -99,11 +86,6 @@ private:
 
     // SENSOR PRINT FUNCTIONS
     void printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel);
-
-
-    // FOR CONTROL
-    unsigned long m_lastStepTime{};
-    unsigned long m_stepStartTime{};
 };
 
 #endif

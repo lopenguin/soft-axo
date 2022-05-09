@@ -14,7 +14,7 @@ Lorenzo Shaikewitz, 4/19/2022
 Axo axo;
 
 Metro controlTimer{20}; // 50 Hz
-int angle{500};
+int angle{0};
 
 void setup() {
     // start up sensors

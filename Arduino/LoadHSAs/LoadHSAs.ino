@@ -1,20 +1,17 @@
 /*
-Main code to run the ankle exoskeleton. Sensor gathering/printing, low-level
-motor control, and other secondary functions are abstracted into the Axo class.
-This file focuses on the high-level control scheme.
+Sets the HSA to loading angles and provides utility for testing.
+Only uses potentiometers.
 
 Lorenzo Shaikewitz, 4/19/2022
 */
 #include "Axo.h"
 #include "constants.h"
-#include "curves.h"
 #include <Metro.h>
 
 Axo axo;
 
 Metro controlTimer{20}; // 50 Hz
-unsigned long startTime{};
-bool fsrHigh{};
+int angle{100};
 
 void setup() {
     // start up sensors
@@ -41,30 +38,13 @@ void setup() {
 
     // reset control timer
     controlTimer.reset();
-    startTime = millis();
 }
 
 
 void loop() {
     // angle control updating
     if (controlTimer.check()) {
-        // compute the time elapsed
-        unsigned long currentTime = millis();
-        unsigned long dt = currentTime - startTime;
-
-        // execute control
-        bangBangAtPushoff(axo, dt, startTime);
-
-        // check the FSR for a step
-        fsr = axo.getFSR();
-        if (fsr > control::FSR_THRESH) {
-            // want to record only the first heel strike
-            if (!fsrHigh) {
-                startTime = currentTime;
-            }
-        } else {
-            fsrHigh = false;
-        }
+        axo.setAngle(angle);
     }
 
     axo.spin();
@@ -85,6 +65,24 @@ void loop() {
                 // pause the loop
                 while (1);
                 break;
+
+            case 'a': {
+                // expect a 4-digit angle command
+                angle = SerialOut.parseInt();
+                if (angle > motor::POT_MAX) angle = motor::POT_MAX;
+                if (angle < motor::POT_MIN) angle = motor::POT_MIN;
+                #ifndef SUPPRESS_LOG
+                SerialOut.printf("LOG,Received a. Setting angle to %d\n", angle);
+                #endif
+                break;
+            }
+
+            case 's': {
+                #ifndef SUPPRESS_LOG
+                axo.stopMotors();
+                SerialOut.printf("LOG,Received s. Stopping motor...\n");
+                #endif
+            }
 
             default:
                 #ifndef SUPPRESS_LOG
