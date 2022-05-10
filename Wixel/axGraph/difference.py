@@ -1,3 +1,7 @@
+"""
+Processes quaternion -> euler data and interprets dorsiflexion angle
+"""
+
 import math, csv
 import numpy as np
  

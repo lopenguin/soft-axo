@@ -1,3 +1,7 @@
+"""
+Processes the Wixel data into files of specified data types.
+"""
+
 import csv
 
 def split(s):
@@ -23,15 +27,11 @@ def split(s):
             j += 1
     return ret
 
-
-
-
-
 FILENAME = r"C:\Users\janwa\OneDrive\Documents\axGraph\Axo0_2022-05-06_163215_SAMPLE_TESTING.log"
 
 OUTPUT = [('FSR',2),
           ('LOAD',2),
-          ('IMU', 23)] # total number of datapoints per entry
+          ('IMU', 23)] # name, total number of datapoints per entry
 
 OUTPUT_FILES = []
 for (file, _) in OUTPUT:
