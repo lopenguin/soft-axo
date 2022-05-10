@@ -254,7 +254,7 @@ AAAAAAA                   AAAAAAAmmmmmm   mmmmmm   mmmmmmbbbbbbbbbbbbbbbb       
                                                                                                                                                                                       
                                                                                                                                                                                       
         """
-        cls.printing(a, 0.0001)
+        cls.printing(a, 0.000001)
 
     @classmethod
     def printing(cls, str, delay):
