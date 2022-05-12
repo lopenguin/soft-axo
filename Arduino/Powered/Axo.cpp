@@ -111,8 +111,8 @@ void Axo::updateMotors() {
     Axo::m_rightMotor.writeMicroseconds(rMS);
 
     #ifndef SUPPRESS_MOTOR
-    SerialOut.printf("MOTOR,(%u, %u),(%u, %u),(%u, %u),(%u, %u)\n", 
-                    currPotL, currPotR,
+    SerialOut.printf("MOTOR,%u,,%u,%u,,%u,%u,,%u,%u,,%u,%u\n", 
+                    millis(), currPotL, currPotR,
                     currPotL + 1023*m_turnsL, currPotR + 1023*m_turnsR,
                     m_targetAngleL, m_targetAngleR,
                     lMS, rMS);
@@ -170,10 +170,10 @@ void Axo::begin(bool useIMUOffsets) {
     m_footIMU.setExtCrystalUse(true);
 
     // set IMU offsets
-    // if (useIMUOffsets) {
-    //     m_shinIMU.setSensorOffsets(offsets::shin);
-    //     m_footIMU.setSensorOffsets(offsets::foot);
-    // }
+    if (useIMUOffsets) {
+        m_shinIMU.setSensorOffsets(offsets::shin);
+        m_footIMU.setSensorOffsets(offsets::foot);
+    }
 
     // Switch to NDOF mode--use all 9 DOFs, 100 Hz fusion data
     m_shinIMU.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
@@ -221,14 +221,14 @@ void Axo::spin() {
     if (m_timerFSR.check()) {
         m_fsrVal = analogRead(pin::FSR);
         #ifndef SUPPRESS_FSR
-        SerialOut.printf("FSR,%u\n", m_fsrVal);
+        SerialOut.printf("FSR,%u,,%u\n", millis(), m_fsrVal);
         #endif
     }
 
     if (m_timerLoad.check()) {
         m_loadCellVal = analogRead(pin::LOADCELL);
         #ifndef SUPPRESS_LOAD
-        SerialOut.printf("LOAD,%u\n", m_loadCellVal);
+        SerialOut.printf("LOAD,%u,%u\n", millis(), m_loadCellVal);
         #endif
     }
 
@@ -255,9 +255,9 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
     //      shin quaternion (qw, qx, qy, qz), foot quaternion
     //      shin accel (ax, ay, az), foot accel
 
-    SerialOut.printf("IMU,(%u, %u, %u, %u),(%u, %u, %u, %u),"
-                    "(%.4f, %.4f, %.4f, %.4f),(%.4f, %.4f, %.4f, %.4f),"
-                    "(%.4f, %.4f, %.4f),(%.4f, %.4f, %.4f)\n",
+    SerialOut.printf("IMU,%u,,%u, %u, %u, %u,,%u, %u, %u, %u,,"
+                    "%.4f, %.4f, %.4f, %.4f,,%.4f, %.4f, %.4f, %.4f,,"
+                    "%.4f, %.4f, %.4f,,%.4f, %.4f, %.4f\n", millis(),
         m_quatCalShin[0], m_quatCalShin[1], m_quatCalShin[2], m_quatCalShin[3],
         m_quatCalFoot[0], m_quatCalFoot[1], m_quatCalFoot[2], m_quatCalFoot[3],
         m_quatShin.w(), m_quatShin.x(), m_quatShin.y(), m_quatShin.z(),
@@ -268,10 +268,10 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
 
 
 void Axo::printKey() {
-    SerialOut.println("IMU,shin calibration (total, gyro, accel, mag),foot calibration,"
-                      "shin quaternion (qw, qx, qy, qz),foot quaternion,shin accel (ax, ay, az),foot accel");
+    SerialOut.println("IMU,time,,shin calibration total, gyro, accel, mag,,foot calibration total, gyro, accel, mag,,"
+                      "shin quaternion qw, qx, qy, qz,,foot quaternion qw, qx, qy, qz,,shin accel ax, ay, az,,foot accel ax, ay, az");
 
-    SerialOut.println("FSR,analog reading (0->1023)");
-    SerialOut.println("LOAD,analog reading (0->1023)");
-    SerialOut.println("MOTOR,current potentiometer reading (L, R),adjusted current potentiometer reading (L, R),target potentiometer reading (L, R),microseconds command (L, R)");
+    SerialOut.println("FSR,time,analog reading (0->1023)");
+    SerialOut.println("LOAD,time,analog reading (0->1023)");
+    SerialOut.println("MOTOR,time,,current potentiometer reading L, R,,adjusted current potentiometer reading L, R,,target potentiometer reading L, R,,microseconds command L, R");
 }

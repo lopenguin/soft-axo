@@ -11,8 +11,12 @@ Lorenzo Shaikewitz, 4/17/2022
 #include <Adafruit_BNO055.h>
 
 /*Serial definition*/
-#define SerialOut Serial    // for serial monitor
-// #define SerialOut Serial1   // for Wixel streaming
+// #define SerialOut Serial    // for serial monitor
+#define SerialOut Serial1   // for Wixel streaming
+
+/*Side definition (for IMU offsets)*/
+// #define USE_ZERO_OFFSETS
+#define USE_ONE_OFFSETS
 
 /*Suppression definition*/
 // #define SUPPRESS_IMU
@@ -20,10 +24,6 @@ Lorenzo Shaikewitz, 4/17/2022
 // #define SUPPRESS_LOAD
 // #define SUPPRESS_MOTOR
 // #define SUPPRESS_LOG
-
-/*Side definition (for IMU offsets)*/
-#define USE_LEFT_OFFSETS
-// #define USE_RIGHT_OFFSETS
 
 constexpr int BAUD{57600};
 
@@ -85,41 +85,43 @@ namespace motor {
 
 
 namespace offsets {
-    // #ifdef USE_LEFT_OFFSETS
-    // adafruit_bno055_offsets_t shin {
-    //     10, -56, -10, // accel offsets
-    //     345, 217, -83, // mag offsets
-    //     0, 0, -2, // gyro offsets
-    //     1000,         // accel radius
-    //     766          // mag radius
-    // };
+    #ifdef USE_ZERO_OFFSETS
+    constexpr adafruit_bno055_offsets_t shin{
+        -7, -25, 1, // accel offsets
+        325, 185, -92, // mag offsets
+        0, -1, -1, // gyro offsets
+        1000,         // accel radius
+        800          // mag radius
+    };
 
-    // adafruit_bno055_offsets_t foot {
-    //     10, -56, -10, // accel offsets
-    //     345, 217, -83, // mag offsets
-    //     0, 0, -2, // gyro offsets
-    //     1000,         // accel radius
-    //     766          // mag radius
-    // };
-    // #endif
 
-    // #ifdef USE_RIGHT_OFFSETS
-    // adafruit_bno055_offsets_t shin {
-    //     10, -56, -10, // accel offsets
-    //     345, 217, -83, // mag offsets
-    //     0, 0, -2, // gyro offsets
-    //     1000,         // accel radius
-    //     766          // mag radius
-    // };
+    constexpr adafruit_bno055_offsets_t foot{
+        -21, -49, -54, // accel offsets
+        14, 324, -124, // mag offsets
+        -1, -1, 0, // gyro offsets
+        1000,         // accel radius
+        807          // mag radius
+    };
+    #endif
 
-    // adafruit_bno055_offsets_t foot {
-    //     10, -56, -10, // accel offsets
-    //     345, 217, -83, // mag offsets
-    //     0, 0, -2, // gyro offsets
-    //     1000,         // accel radius
-    //     766          // mag radius
-    // };
-    // #endif
+    #ifdef USE_ONE_OFFSETS
+    constexpr adafruit_bno055_offsets_t shin{
+        3, -86, -15, // accel offsets
+        -262, 487, -434, // mag offsets
+        -2, 2, 0, // gyro offsets
+        1000,         // accel radius
+        788          // mag radius
+    };
+
+
+    constexpr adafruit_bno055_offsets_t foot{
+        -25, -57, -43, // accel offsets
+        -338, 303, -115, // mag offsets
+        1, -5, 0, // gyro offsets
+        1000,         // accel radius
+        879          // mag radius
+    };
+    #endif
 }
 
 #endif

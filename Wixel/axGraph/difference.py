@@ -12,7 +12,7 @@ def q2e(q):
         pitch is rotation around y in radians (counterclockwise)
         yaw is rotation around z in radians (counterclockwise)
         """
-        x, y, z, w = q[0], q[1], q[2], q[3]
+        w, x, y, z = q[0], q[1], q[2], q[3]
         t0 = +2.0 * (w * x + y * z)
         t1 = +1.0 - 2.0 * (x * x + y * y)
         roll_x = math.atan2(t0, t1)
@@ -28,7 +28,7 @@ def q2e(q):
      
         return np.array([roll_x, pitch_y, yaw_z]) # in radians
 
-IMU_FILE = r"C:\Users\janwa\OneDrive\Documents\axGraph\Axo0_2022-05-06_163215_SAMPLE_TESTING_IMU.csv"
+IMU_FILE = r"Axo0_2022-05-06_163215_SAMPLE_TESTING_IMU.csv"
 
 QUATERNION_FILE = r"q.csv"
 EULER_FILE = r"e.csv"
@@ -48,7 +48,8 @@ with open(IMU_FILE) as ifile:
                 except:
                     print(row)
                 assert(len(q1) == len(q2))
-                q_diff = q1 - q2
+                q2conj = [q2[0], -q2[1], -q2[2], -q2[3]]
+                q_diff = q2conj*q1
                 e_diff = q2e(q1) - q2e(q2)
                 qwriter.writerow(q_diff)
                 ewriter.writerow(e_diff)

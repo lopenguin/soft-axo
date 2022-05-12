@@ -30,8 +30,8 @@ uint16_t SAMPLERATE{100}; // Hz
 Metro IMUtimer = Metro(SAMPLERATE); // read the IMUs at SAMPLERATE Hz
 
 // Sensor Object
-Adafruit_BNO055 myIMU = Adafruit_BNO055(BNO055_ID, 0x29); // shin
-// Adafruit_BNO055 myIMU = Adafruit_BNO055(BNO055_ID, 0x28); // foot
+// Adafruit_BNO055 myIMU = Adafruit_BNO055(BNO055_ID, 0x29); // shin
+Adafruit_BNO055 myIMU = Adafruit_BNO055(BNO055_ID, 0x28); // foot
 
 void setup() {
     SerialOut.begin(57600);
