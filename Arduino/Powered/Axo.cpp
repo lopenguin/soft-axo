@@ -40,7 +40,7 @@ void Axo::beginMotors() {
     m_turnsR = 0;
 
     #ifndef SUPPRESS_LOG
-    SerialOut.println("LOG,Motors started.");
+    SerialOut.printf("LOG,%d | Motors started.\n",millis());
     #endif
 
     // reset the metro timers
@@ -111,7 +111,7 @@ void Axo::updateMotors() {
     Axo::m_rightMotor.writeMicroseconds(rMS);
 
     #ifndef SUPPRESS_MOTOR
-    SerialOut.printf("MOTOR,%u,,%u,%u,,%u,%u,,%u,%u,,%u,%u\n", 
+    SerialOut.printf("MOTOR,%u | %u,%u | %u,%u | %u,%u | %u,%u\n", 
                     millis(), currPotL, currPotR,
                     currPotL + 1023*m_turnsL, currPotR + 1023*m_turnsR,
                     m_targetAngleL, m_targetAngleR,
@@ -221,14 +221,14 @@ void Axo::spin() {
     if (m_timerFSR.check()) {
         m_fsrVal = analogRead(pin::FSR);
         #ifndef SUPPRESS_FSR
-        SerialOut.printf("FSR,%u,,%u\n", millis(), m_fsrVal);
+        SerialOut.printf("FSR,%u | %u\n", millis(), m_fsrVal);
         #endif
     }
 
     if (m_timerLoad.check()) {
         m_loadCellVal = analogRead(pin::LOADCELL);
         #ifndef SUPPRESS_LOAD
-        SerialOut.printf("LOAD,%u,%u\n", millis(), m_loadCellVal);
+        SerialOut.printf("LOAD,%u | %u\n", millis(), m_loadCellVal);
         #endif
     }
 
@@ -242,7 +242,7 @@ void Axo::heartbeat() {
     if (m_timerHeartbeat.check()) {
         #ifndef SUPPRESS_LOG
         unsigned long t = millis();
-        SerialOut.printf("LOG,Heartbeat %u\n",t);
+        SerialOut.printf("LOG,%u | Heartbeat\n",t);
         #endif
     }
 }
@@ -255,9 +255,9 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
     //      shin quaternion (qw, qx, qy, qz), foot quaternion
     //      shin accel (ax, ay, az), foot accel
 
-    SerialOut.printf("IMU,%u,,%u, %u, %u, %u,,%u, %u, %u, %u,,"
-                    "%.4f, %.4f, %.4f, %.4f,,%.4f, %.4f, %.4f, %.4f,,"
-                    "%.4f, %.4f, %.4f,,%.4f, %.4f, %.4f\n", millis(),
+    SerialOut.printf("IMU,%u | %u,%u,%u,%u | %u,%u,%u,%u | "
+                    "%.4f,%.4f,%.4f,%.4f | %.4f,%.4f,%.4f,%.4f | "
+                    "%.4f,%.4f,%.4f | %.4f,%.4f,%.4f\n", millis(),
         m_quatCalShin[0], m_quatCalShin[1], m_quatCalShin[2], m_quatCalShin[3],
         m_quatCalFoot[0], m_quatCalFoot[1], m_quatCalFoot[2], m_quatCalFoot[3],
         m_quatShin.w(), m_quatShin.x(), m_quatShin.y(), m_quatShin.z(),
@@ -268,10 +268,12 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
 
 
 void Axo::printKey() {
-    SerialOut.println("IMU,time,,shin calibration total, gyro, accel, mag,,foot calibration total, gyro, accel, mag,,"
-                      "shin quaternion qw, qx, qy, qz,,foot quaternion qw, qx, qy, qz,,shin accel ax, ay, az,,foot accel ax, ay, az");
+    SerialOut.println("IMU,time | shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | "
+                      "shin_qw,shin_qx,shin_qy,shin_qz | foot_qw,foot_qx,foot_qy,foot_qz | shin_ax,shin_ay,shin_az | foot_ax,foot_ay,foot_az");
 
-    SerialOut.println("FSR,time,analog reading (0->1023)");
-    SerialOut.println("LOAD,time,analog reading (0->1023)");
-    SerialOut.println("MOTOR,time,,current potentiometer reading L, R,,adjusted current potentiometer reading L, R,,target potentiometer reading L, R,,microseconds command L, R");
+    SerialOut.println("FSR,time | val");
+    SerialOut.println("LOAD,time | val");
+    SerialOut.println("MOTOR,time | potL_cur,potR_cur | potL_adj,potR_adj | targetPotL,targetPotR | motorCmdL,motorCmdR");
+    SerialOut.println("LOG,time | msg");
+    SerialOut.println("ERR,msg");
 }

@@ -21,7 +21,6 @@ static constexpr int maxAngle{600};
 static constexpr int zeroAngle{0};
 
 void bangBangAtPushoff(Axo& axo, unsigned long timeSinceLastHeelStrike, unsigned long lastStepTime) {
-    SerialOut.printf("%d, %d\n", timeSinceLastHeelStrike, lastStepTime);
 
     if ((timeSinceLastHeelStrike > triggerPercent*lastStepTime) &&
         (timeSinceLastHeelStrike < ((0.2 + triggerPercent)*lastStepTime))) {

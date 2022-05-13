@@ -65,7 +65,7 @@ void loop() {
                 stepTime = dt;
                 startTime = currentTime;
                 #ifndef SUPPRESS_LOG
-                SerialOut.printf("Step Recorded! %u\n", dt);
+                SerialOut.printf("LOG,%d | Step Recorded! %u\n", millis(), dt);
                 #endif
             }
         } else {
@@ -82,7 +82,7 @@ void loop() {
             case 'x':
                 // stop!
                 #ifndef SUPPRESS_LOG
-                SerialOut.println("LOG,Received x. Terminating Axo...");
+                SerialOut.printf("LOG,%d | Received x. Terminating Axo...\n",millis());
                 #endif
                 axo.detachMotors();
                 axo.setBlueLED(HIGH);
@@ -94,7 +94,7 @@ void loop() {
 
             default:
                 #ifndef SUPPRESS_LOG
-                SerialOut.printf("LOG,Received %c. No action taken.\n",c);
+                SerialOut.printf("LOG,%d | Received %c. No action taken.\n",millis(),c);
                 #endif
                 break;
         }
