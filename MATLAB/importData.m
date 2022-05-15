@@ -23,7 +23,7 @@ errKey = {};
 
 for row = 1:height(allData)
     label = allData{row, 1}{1};
-    r = allData{row,:};
+    r = allData{row,:}
     if label == "IMU"
         [d.IMU, imuKey] = buildTable(d.IMU, r, imuKey);
     end

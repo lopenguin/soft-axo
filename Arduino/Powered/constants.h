@@ -25,7 +25,7 @@ Lorenzo Shaikewitz, 4/17/2022
 // #define SUPPRESS_MOTOR
 // #define SUPPRESS_LOG
 
-constexpr int BAUD{57600};
+constexpr int BAUD{115200};
 
 namespace control {
     constexpr int FSR_THRESH{450};
