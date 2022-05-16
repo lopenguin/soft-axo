@@ -41,7 +41,7 @@ void Axo::beginMotors() {
 
     #ifndef SUPPRESS_LOG
     unsigned long t{millis() - m_startTime};
-    SerialOut.printf("LOG,%s | Motors started.\n",int_to_char(t));
+    SerialOut.printf("\nLOG,%d | Motors started.",t);
     #endif
 
     // reset the metro timers
@@ -112,12 +112,14 @@ void Axo::updateMotors() {
     Axo::m_rightMotor.writeMicroseconds(rMS);
 
     #ifndef SUPPRESS_MOTOR
+    // print data
     unsigned long t{millis() - m_startTime};
-    SerialOut.printf("M %s%s%s%s%s%s%s%s%s\n", 
-                    int_to_char(t), int_to_char(currPotL), int_to_char(currPotR),
-                    int_to_char(currPotL + 1023*m_turnsL), int_to_char(currPotR + 1023*m_turnsR),
-                    int_to_char(m_targetAngleL), int_to_char(m_targetAngleR),
-                    int_to_char(lMS), int_to_char(rMS));
+    SerialOut.print("\nM ");
+    writeBytes(t, 4);
+    writeBytes(currPotL);   writeBytes(currPotR);
+    writeBytes(currPotL + 1023*m_turnsL);   writeBytes(currPotR + 1023*m_turnsR);
+    writeBytes(m_targetAngleL);    writeBytes(m_targetAngleR);
+    writeBytes(lMS); writeBytes(rMS);
     #endif
 }
 
@@ -158,11 +160,11 @@ void Axo::begin(bool useIMUOffsets) {
     bool footIMUStarted = m_footIMU.begin();
 
     if (!shinIMUStarted) {
-        SerialOut.println("ERR,Error connecting to shin IMU. Foot IMU status unknown.");
+        SerialOut.println("\nERR,Error connecting to shin IMU. Foot IMU status unknown.");
         while (1);
     }
     if (!footIMUStarted) {
-        SerialOut.println("ERR,Error connecting to foot IMU. Shin IMU successfully connected.");
+        SerialOut.println("\nERR,Error connecting to foot IMU. Shin IMU successfully connected.");
         while (1);
     }
 
@@ -199,9 +201,6 @@ void Axo::spin() {
     // heartbeat();
 
     if (m_timerIMU.check()) {
-        /* DATA OUTPUT FORMAT:
-        TODO
-        */
         // Calibration status
         m_shinIMU.getCalibration(&m_quatCalShin[0], &m_quatCalShin[1], &m_quatCalShin[2], &m_quatCalShin[3]);
         m_footIMU.getCalibration(&m_quatCalFoot[0], &m_quatCalFoot[1], &m_quatCalFoot[2], &m_quatCalFoot[3]);
@@ -225,7 +224,8 @@ void Axo::spin() {
         m_fsrVal = analogRead(pin::FSR);
         #ifndef SUPPRESS_FSR
         unsigned long t{millis() - m_startTime};
-        SerialOut.printf("F %s%s\n", int_to_char(t), int_to_char(m_fsrVal));
+        SerialOut.print("\nF ");
+        writeBytes(t, 4);   writeBytes(m_fsrVal);
         #endif
     }
 
@@ -233,7 +233,8 @@ void Axo::spin() {
         m_loadCellVal = analogRead(pin::LOADCELL);
         #ifndef SUPPRESS_LOAD
         unsigned long t{millis() - m_startTime};
-        SerialOut.printf("L %s%s\n", int_to_char(t), int_to_char(m_loadCellVal));
+        SerialOut.print("\nL ");
+        writeBytes(t, 4);   writeBytes(m_loadCellVal);
         #endif
     }
 
@@ -247,7 +248,7 @@ void Axo::heartbeat() {
     if (m_timerHeartbeat.check()) {
         #ifndef SUPPRESS_LOG
         unsigned long t{millis() - m_startTime};
-        SerialOut.printf("LOG,%s | Heartbeat\n",int_to_char(t));
+        SerialOut.printf("\nLOG,%d | Heartbeat\n",t);
         #endif
     }
 }
@@ -279,30 +280,44 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
     uint16_t footAccel_y = floatToInt(footAccel->acceleration.y,2);
     uint16_t footAccel_z = floatToInt(footAccel->acceleration.z,2);
 
-    SerialOut.printf("I %s%s%s%s%s%s%s%s"
-                    "%s%s%s%s%s%s%s%s"
-                    "%s%s%s%s%s%s\n",
-        int_to_char(m_quatCalShin[0]), int_to_char(m_quatCalShin[1]), int_to_char(m_quatCalShin[2]), int_to_char(m_quatCalShin[3]),
-        int_to_char(m_quatCalFoot[0]), int_to_char(m_quatCalFoot[1]), int_to_char(m_quatCalFoot[2]), int_to_char(m_quatCalFoot[3]),
-        int_to_char(quatShin_w), int_to_char(quatShin_x), int_to_char(quatShin_y), int_to_char(quatShin_z),
-        int_to_char(quatFoot_w), int_to_char(quatFoot_x), int_to_char(quatFoot_y), int_to_char(quatFoot_z),
-        int_to_char(shinAccel_x), int_to_char(shinAccel_y), int_to_char(shinAccel_z),
-        int_to_char(footAccel_x), int_to_char(footAccel_y), int_to_char(footAccel_z));
+    SerialOut.print("\nI ");
+    // calibration constants
+    writeBytes(m_quatCalShin[0],1); writeBytes(m_quatCalShin[1],1); writeBytes(m_quatCalShin[2],1); writeBytes(m_quatCalShin[3],1);
+    writeBytes(m_quatCalFoot[0],1); writeBytes(m_quatCalFoot[1],1); writeBytes(m_quatCalFoot[2],1); writeBytes(m_quatCalFoot[3],1);
+    // quaternions
+    writeBytes(quatShin_w); writeBytes(quatShin_x); writeBytes(quatShin_y); writeBytes(quatShin_z);
+    writeBytes(quatFoot_w); writeBytes(quatFoot_x); writeBytes(quatFoot_y); writeBytes(quatFoot_z);
+    // acceleration
+    writeBytes(shinAccel_x); writeBytes(shinAccel_y); writeBytes(shinAccel_z);
+    writeBytes(footAccel_x); writeBytes(footAccel_y); writeBytes(footAccel_z);
 }
 
 
 void Axo::printKey() {
-    SerialOut.println("IMU,shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | "
+    SerialOut.print("\nI ,shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | "
                       "shin_qw,shin_qx,shin_qy,shin_qz | foot_qw,foot_qx,foot_qy,foot_qz | shin_ax,shin_ay,shin_az | foot_ax,foot_ay,foot_az");
 
-    SerialOut.println("FSR,time | val");
-    SerialOut.println("LOAD,time | val");
-    SerialOut.println("MOTOR,time | potL_cur,potR_cur | potL_adj,potR_adj | targetPotL,targetPotR | motorCmdL,motorCmdR");
-    SerialOut.println("LOG,time | msg");
-    SerialOut.println("ERR,msg");
+    SerialOut.print("\nF ,time | val");
+    SerialOut.print("\nL ,time | val");
+    SerialOut.print("\nM ,time | potL_cur,potR_cur | potL_adj,potR_adj | targetPotL,targetPotR | motorCmdL,motorCmdR");
+    SerialOut.print("\nLOG,time | msg");
+    SerialOut.println("\nERR,msg");
 }
 
 // converts float to 2 characters
 uint16_t Axo::floatToInt(float f, int precision) {
     return static_cast<uint16_t>(f * pow(10, precision));
+}
+
+void writeBytes(int v, int numBytes) {
+    uint8_t b[numBytes]{};
+    // split into bytes
+    for (int i{0}; i < numBytes; ++i) {
+        b[i] = (v & (0xff << 8*i)) >> 8*i;
+    }
+    // write the values in reverse order
+    for (int i{ numBytes-1 }; i >= 0; --i) {
+        SerialOut.write(b[i]);
+        SerialOut.print(i);
+    }
 }

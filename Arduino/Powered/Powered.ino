@@ -66,7 +66,7 @@ void loop() {
                 startTime = currentTime;
                 #ifndef SUPPRESS_LOG
                 unsigned long t{millis() - axo.startTime()};
-                SerialOut.printf("LOG,%s | Step Recorded! %u\n", int_to_char(t), dt);
+                SerialOut.printf("\nLOG,%d | Step Recorded! %u", t, dt);
                 #endif
             }
         } else {
@@ -84,7 +84,7 @@ void loop() {
                 // stop!
                 #ifndef SUPPRESS_LOG
                 unsigned long t{millis() - axo.startTime()};
-                SerialOut.printf("LOG,%s | Received x. Terminating Axo...\n",int_to_char(t));
+                SerialOut.printf("\nLOG,%d | Received x. Terminating Axo...",t);
                 #endif
                 axo.detachMotors();
                 axo.setBlueLED(HIGH);
@@ -98,7 +98,7 @@ void loop() {
             default: {
                 #ifndef SUPPRESS_LOG
                 unsigned long t{millis() - axo.startTime()};
-                SerialOut.printf("LOG,%s | Received %c. No action taken.\n",int_to_char(t),c);
+                SerialOut.printf("\nLOG,%d | Received %c. No action taken.",t,c);
                 #endif
                 break;
             }

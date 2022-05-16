@@ -27,9 +27,6 @@ Lorenzo Shaikewitz, 4/17/2022
 
 constexpr int BAUD{115200};
 
-// Macros for print statements
-#define int_to_char(x) (static_cast<const char*>(static_cast<const void*>(&x)))
-
 namespace control {
     constexpr int FSR_THRESH{450};
 }

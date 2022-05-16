@@ -93,4 +93,7 @@ public:
     unsigned long startTime() { return m_startTime; }
 };
 
+// Automatically writes the specified bytes to the Serial monitor
+void writeBytes(int v, int numBytes = 2);
+
 #endif
