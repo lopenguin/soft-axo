@@ -11,12 +11,12 @@ Lorenzo Shaikewitz, 4/17/2022
 #include <Adafruit_BNO055.h>
 
 /*Serial definition*/
-// #define SerialOut Serial    // for serial monitor
-#define SerialOut Serial1   // for Wixel streaming
+#define SerialOut Serial    // for serial monitor
+// #define SerialOut Serial1   // for Wixel streaming
 
 /*Side definition (for IMU offsets)*/
-// #define USE_ZERO_OFFSETS
-#define USE_ONE_OFFSETS
+#define USE_ZERO_OFFSETS
+// #define USE_ONE_OFFSETS
 
 /*Suppression definition*/
 // #define SUPPRESS_IMU
@@ -26,6 +26,9 @@ Lorenzo Shaikewitz, 4/17/2022
 // #define SUPPRESS_LOG
 
 constexpr int BAUD{115200};
+
+// Macros for print statements
+#define int_to_char(x) (static_cast<const char*>(static_cast<const void*>(&x)))
 
 namespace control {
     constexpr int FSR_THRESH{450};

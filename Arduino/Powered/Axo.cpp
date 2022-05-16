@@ -40,7 +40,8 @@ void Axo::beginMotors() {
     m_turnsR = 0;
 
     #ifndef SUPPRESS_LOG
-    SerialOut.printf("LOG,%d | Motors started.\n",millis());
+    unsigned long t{millis() - m_startTime};
+    SerialOut.printf("LOG,%s | Motors started.\n",int_to_char(t));
     #endif
 
     // reset the metro timers
@@ -111,11 +112,12 @@ void Axo::updateMotors() {
     Axo::m_rightMotor.writeMicroseconds(rMS);
 
     #ifndef SUPPRESS_MOTOR
-    SerialOut.printf("MOTOR,%u | %u,%u | %u,%u | %u,%u | %u,%u\n", 
-                    millis(), currPotL, currPotR,
-                    currPotL + 1023*m_turnsL, currPotR + 1023*m_turnsR,
-                    m_targetAngleL, m_targetAngleR,
-                    lMS, rMS);
+    unsigned long t{millis() - m_startTime};
+    SerialOut.printf("M %s%s%s%s%s%s%s%s%s\n", 
+                    int_to_char(t), int_to_char(currPotL), int_to_char(currPotR),
+                    int_to_char(currPotL + 1023*m_turnsL), int_to_char(currPotR + 1023*m_turnsR),
+                    int_to_char(m_targetAngleL), int_to_char(m_targetAngleR),
+                    int_to_char(lMS), int_to_char(rMS));
     #endif
 }
 
@@ -136,6 +138,7 @@ void Axo::begin(bool useIMUOffsets) {
     pinMode(pin::LEDG, OUTPUT);
     SerialOut.begin(BAUD);
     SerialOut.setTimeout(timer::SERIAL_TIMEOUT);
+    m_startTime = millis();
     // TODO: begin e-stops
 
     SerialOut.println("Axo started.");
@@ -192,8 +195,8 @@ void Axo::begin(bool useIMUOffsets) {
 }
 
 void Axo::spin() {
-    // call the heartbeat
-    heartbeat();
+    // call the heartbeat (no heartbeat needed)
+    // heartbeat();
 
     if (m_timerIMU.check()) {
         /* DATA OUTPUT FORMAT:
@@ -221,14 +224,16 @@ void Axo::spin() {
     if (m_timerFSR.check()) {
         m_fsrVal = analogRead(pin::FSR);
         #ifndef SUPPRESS_FSR
-        SerialOut.printf("FSR,%u | %u\n", millis(), m_fsrVal);
+        unsigned long t{millis() - m_startTime};
+        SerialOut.printf("F %s%s\n", int_to_char(t), int_to_char(m_fsrVal));
         #endif
     }
 
     if (m_timerLoad.check()) {
         m_loadCellVal = analogRead(pin::LOADCELL);
         #ifndef SUPPRESS_LOAD
-        SerialOut.printf("LOAD,%u | %u\n", millis(), m_loadCellVal);
+        unsigned long t{millis() - m_startTime};
+        SerialOut.printf("L %s%s\n", int_to_char(t), int_to_char(m_loadCellVal));
         #endif
     }
 
@@ -241,8 +246,8 @@ void Axo::spin() {
 void Axo::heartbeat() {
     if (m_timerHeartbeat.check()) {
         #ifndef SUPPRESS_LOG
-        unsigned long t = millis();
-        SerialOut.printf("LOG,%u | Heartbeat\n",t);
+        unsigned long t{millis() - m_startTime};
+        SerialOut.printf("LOG,%s | Heartbeat\n",int_to_char(t));
         #endif
     }
 }
@@ -255,20 +260,39 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
     //      shin quaternion (qw, qx, qy, qz), foot quaternion
     //      shin accel (ax, ay, az), foot accel
 
-    SerialOut.printf("IMU,%u | %u,%u,%u,%u | %u,%u,%u,%u | "
-                    "%.4f,%.4f,%.4f,%.4f | %.4f,%.4f,%.4f,%.4f | "
-                    "%.4f,%.4f,%.4f | %.4f,%.4f,%.4f\n", millis(),
-        m_quatCalShin[0], m_quatCalShin[1], m_quatCalShin[2], m_quatCalShin[3],
-        m_quatCalFoot[0], m_quatCalFoot[1], m_quatCalFoot[2], m_quatCalFoot[3],
-        m_quatShin.w(), m_quatShin.x(), m_quatShin.y(), m_quatShin.z(),
-        m_quatFoot.w(), m_quatFoot.x(), m_quatFoot.y(), m_quatFoot.z(),
-        shinAccel->acceleration.x, shinAccel->acceleration.y, shinAccel->acceleration.z,
-        footAccel->acceleration.x, footAccel->acceleration.y, footAccel->acceleration.z);
+    // convert floats to integers
+    uint16_t quatShin_w = floatToInt(m_quatShin.w());
+    uint16_t quatShin_x = floatToInt(m_quatShin.x());
+    uint16_t quatShin_y = floatToInt(m_quatShin.y());
+    uint16_t quatShin_z = floatToInt(m_quatShin.z());
+
+    uint16_t quatFoot_w = floatToInt(m_quatFoot.w());
+    uint16_t quatFoot_x = floatToInt(m_quatFoot.x());
+    uint16_t quatFoot_y = floatToInt(m_quatFoot.y());
+    uint16_t quatFoot_z = floatToInt(m_quatFoot.z());
+
+    uint16_t shinAccel_x = floatToInt(shinAccel->acceleration.x,2);
+    uint16_t shinAccel_y = floatToInt(shinAccel->acceleration.y,2);
+    uint16_t shinAccel_z = floatToInt(shinAccel->acceleration.z,2);
+    
+    uint16_t footAccel_x = floatToInt(footAccel->acceleration.x,2);
+    uint16_t footAccel_y = floatToInt(footAccel->acceleration.y,2);
+    uint16_t footAccel_z = floatToInt(footAccel->acceleration.z,2);
+
+    SerialOut.printf("I %s%s%s%s%s%s%s%s"
+                    "%s%s%s%s%s%s%s%s"
+                    "%s%s%s%s%s%s\n",
+        int_to_char(m_quatCalShin[0]), int_to_char(m_quatCalShin[1]), int_to_char(m_quatCalShin[2]), int_to_char(m_quatCalShin[3]),
+        int_to_char(m_quatCalFoot[0]), int_to_char(m_quatCalFoot[1]), int_to_char(m_quatCalFoot[2]), int_to_char(m_quatCalFoot[3]),
+        int_to_char(quatShin_w), int_to_char(quatShin_x), int_to_char(quatShin_y), int_to_char(quatShin_z),
+        int_to_char(quatFoot_w), int_to_char(quatFoot_x), int_to_char(quatFoot_y), int_to_char(quatFoot_z),
+        int_to_char(shinAccel_x), int_to_char(shinAccel_y), int_to_char(shinAccel_z),
+        int_to_char(footAccel_x), int_to_char(footAccel_y), int_to_char(footAccel_z));
 }
 
 
 void Axo::printKey() {
-    SerialOut.println("IMU,time | shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | "
+    SerialOut.println("IMU,shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | "
                       "shin_qw,shin_qx,shin_qy,shin_qz | foot_qw,foot_qx,foot_qy,foot_qz | shin_ax,shin_ay,shin_az | foot_ax,foot_ay,foot_az");
 
     SerialOut.println("FSR,time | val");
@@ -276,4 +300,9 @@ void Axo::printKey() {
     SerialOut.println("MOTOR,time | potL_cur,potR_cur | potL_adj,potR_adj | targetPotL,targetPotR | motorCmdL,motorCmdR");
     SerialOut.println("LOG,time | msg");
     SerialOut.println("ERR,msg");
+}
+
+// converts float to 2 characters
+uint16_t Axo::floatToInt(float f, int precision) {
+    return static_cast<uint16_t>(f * pow(10, precision));
 }

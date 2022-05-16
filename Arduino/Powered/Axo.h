@@ -86,6 +86,11 @@ private:
 
     // SENSOR PRINT FUNCTIONS
     void printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel);
+    unsigned long m_startTime{};
+
+public:
+    static uint16_t floatToInt(float f, int precision = 4);
+    unsigned long startTime() { return m_startTime; }
 };
 
 #endif
