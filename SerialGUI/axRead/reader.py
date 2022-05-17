@@ -81,6 +81,7 @@ class Reader:
         self.shutdown = False
         self.parity = True
         self.loading = 0
+        self.header = False
 
 
     def callback(self, key):
@@ -91,7 +92,7 @@ class Reader:
         row = [key[1:]]
         byteslist = self.keys[key]
         for (bytes, f, args) in byteslist:
-            for _ in range(0, bytes * 2, 2):
+            for _ in range(0, bytes * 2):
                 self.safeRead()
             value = f(int('0x' + self.buffer[-2 * bytes:], 16), args)
             row.append(value)
@@ -142,6 +143,12 @@ class Reader:
                 continue
 
             if len(self.buffer) % 2 == 1:
+                continue
+
+            if not self.header or self.message[-15:] == 'Motors started.':
+                self.header = True
+                print('sasdlkfjas')
+            else:
                 continue
 
             key = self.hexToASCII(self.buffer[-2:]) # convert last two bytes to ASCII
