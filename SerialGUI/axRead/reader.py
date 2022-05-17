@@ -94,6 +94,10 @@ class Reader:
         for (bytes, f, args) in byteslist:
             for _ in range(0, bytes * 2):
                 self.safeRead()
+                maybe_key = self.hexToASCII(self.buffer[-6:-4]) + self.hexToASCII(self.buffer[-4:-2]) + self.hexToASCII(self.buffer[-2:])
+                if maybe_key in self.keys:
+                    self.callback(maybe_key)
+                    return
             value = f(int('0x' + self.buffer[-2 * bytes:], 16), args)
             row.append(value)
         self.data[key].append(row)
