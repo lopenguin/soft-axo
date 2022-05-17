@@ -129,11 +129,9 @@ class Reader:
     def spin(self):
         while True:
             if self.shutdown:
-                # print("shutdown")
                 self.halt()
                 quit()
-            # print("spinning2")
-            # read a byte
+
             self.safeRead()
             self.bytesread += 0.5
             if len(self.buffer) < 4:
@@ -173,7 +171,6 @@ with open(FILENAME) as file:
     data = file.readlines()[0]
 
 def read(args):
-    # print(args[0][0])
     args[0] += 1
     if args[0] >= len(data):
         return -1
