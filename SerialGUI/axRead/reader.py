@@ -145,10 +145,10 @@ class Reader:
             if len(self.buffer) % 2 == 1:
                 continue
 
-            if not self.header or self.message[-15:] == 'Motors started.':
+            if not self.header and self.message[-15:] == 'Motors started.':
+                print(self.message)
                 self.header = True
-                print('sasdlkfjas')
-            else:
+            elif not self.header:
                 continue
 
             key = self.hexToASCII(self.buffer[-2:]) # convert last two bytes to ASCII
@@ -158,7 +158,7 @@ class Reader:
                 self.callback(header)
 
             if int(self.bytesread) == self.bytesread and int(self.bytesread) % 10000 == 0:
-                os.system('cls' if os.name == 'nt' else 'clear')
+                # os.system('cls' if os.name == 'nt' else 'clear')
                 spin = ''
                 if self.loading == 0:
                     spin = 'Spinning.'
