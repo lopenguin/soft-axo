@@ -85,11 +85,13 @@ class Reader:
 
     def callback(self, key):
         # print("in")
-        self.safeRead()
-        row = []
+        # self.safeRead()
+        # print(repr(key))
+        # input()
+        row = [key[1:]]
         byteslist = self.keys[key]
         for (bytes, f, args) in byteslist:
-            for _ in range(bytes):
+            for _ in range(0, bytes * 2, 2):
                 self.safeRead()
             value = f(int('0x' + self.buffer[-2 * bytes:], 16), args)
             row.append(value)
