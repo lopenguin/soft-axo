@@ -120,7 +120,7 @@ class Reader:
             self.message += self.hexToASCII(self.buffer[-2:])
 
     def halt(self):
-        msg_file = open(self.msg_filename, 'w')
+        msg_file = open(self.msg_filename, 'w', encoding='utf8')
         
         msg_file.write(self.message)
 

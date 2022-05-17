@@ -318,6 +318,5 @@ void writeBytes(int v, int numBytes) {
     // write the values in reverse order
     for (int i{ numBytes-1 }; i >= 0; --i) {
         SerialOut.write(b[i]);
-        SerialOut.print(i);
     }
 }
