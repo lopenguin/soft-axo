@@ -39,5 +39,42 @@ void bangBangAtPushoff(Axo& axo, unsigned long timeSinceLastHeelStrike, unsigned
         axo.stopMotors();
     }
 }
+//                        ---Associated axo control code---
+// unsigned long startTime{}; // Initialize to millis() in setup
+// unsigned long stepTime{2000};
+// bool fsrHigh{};
+// -------------------------------------------------------------
+// loop():
+//     if (controlTimer.check()) {
+//         // compute the time elapsed
+//         unsigned long currentTime = millis();
+//         unsigned long dt = currentTime - startTime;
+
+//         // execute control
+//         bangBangAtPushoff(axo, dt, stepTime);
+
+//         // check the FSR for a step
+//         int fsr = axo.getFSR();
+//         if (fsr > control::FSR_THRESH) {
+//             // want to record only the first heel strike
+//             if (!fsrHigh) {
+//                 fsrHigh = true;
+//                 stepTime = dt;
+//                 startTime = currentTime;
+//                 #ifndef SUPPRESS_LOG
+//                 unsigned long t{millis() - axo.startTime()};
+//                 SerialOut.printf("\nLOG,%d | Step Recorded! %u", t, dt);
+//                 #endif
+//             }
+//         } else {
+//             fsrHigh = false;
+//         }
+//     }
+
+
+
+/* FSR release
+
+*/
 
 #endif

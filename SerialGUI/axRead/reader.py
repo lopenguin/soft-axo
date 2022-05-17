@@ -8,12 +8,14 @@ import os, csv
 from bcolors import *
 from util import *
 
+KEY_LENGTH = 3
+
 # edit your key to be whatever you like!
-keys = {'\nF' : [(4, uint_to_uint, ()), (2, uint_to_uint, ())],
+keys = {'\nF ' : [(4, uint_to_uint, ()), (2, uint_to_uint, ())],
 
-        '\nL' : [(4, uint_to_uint, ()), (2, uint_to_uint, ())],
+        '\nL ' : [(4, uint_to_uint, ()), (2, uint_to_uint, ())],
 
-        '\nM' : [(4, uint_to_uint, ()),
+        '\nM ' : [(4, uint_to_uint, ()),
                  (2, uint_to_uint, ()),
                  (2, uint_to_uint, ()),
                  (2, uint_to_int, (16)),
@@ -23,7 +25,7 @@ keys = {'\nF' : [(4, uint_to_uint, ()), (2, uint_to_uint, ())],
                  (2, uint_to_uint, ()),
                  (2, uint_to_uint, ())],
 
-        '\nI' : [(1, uint_to_uint, ()),
+        '\nI ' : [(1, uint_to_uint, ()),
                  (1, uint_to_uint, ()),
                  (1, uint_to_uint, ()),
                  (1, uint_to_uint, ()),
@@ -114,7 +116,7 @@ class Reader:
         
         self.buffer += h
         self.parity = not self.parity
-        if self.parity and len(self.buffer) > 2:
+        if self.parity and len(self.buffer) >= 2:
             self.message += self.hexToASCII(self.buffer[-2:])
 
     def halt(self):
@@ -134,11 +136,14 @@ class Reader:
 
             self.safeRead()
             self.bytesread += 0.5
-            if len(self.buffer) < 4:
+            if len(self.buffer) < KEY_LENGTH*2:
+                continue
+
+            if len(self.buffer) % 2 == 1:
                 continue
 
             key = self.hexToASCII(self.buffer[-2:]) # convert last two bytes to ASCII
-            header = self.hexToASCII(self.buffer[-4:-2]) + key # convert last four bytes to ASCII string
+            header = self.hexToASCII(self.buffer[-6:-4]) + self.hexToASCII(self.buffer[-4:-2]) + key # convert last four bytes to ASCII string
 
             if header in self.keys:
                 self.callback(header)
