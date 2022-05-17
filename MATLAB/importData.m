@@ -24,19 +24,19 @@ errKey = {};
 for row = 1:height(allData)
     label = allData{row, 1}{1};
     r = allData{row,:}
-    if label == "IMU"
+    if label == "I "
         [d.IMU, imuKey] = buildTable(d.IMU, r, imuKey);
     end
     
-    if label == "FSR"
+    if label == "F "
         [d.FSR, fsrKey] = buildTable(d.FSR, r, fsrKey);
     end
     
-    if label == "LOAD"
+    if label == "L "
         [d.LOAD, loadKey] = buildTable(d.LOAD, r, loadKey);
     end
     
-    if label == "MOTOR"
+    if label == "M "
         [d.MOTOR, motorKey] = buildTable(d.MOTOR, r, motorKey);
     end
     
