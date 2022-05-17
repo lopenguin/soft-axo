@@ -145,9 +145,9 @@ class Reader:
             if len(self.buffer) % 2 == 1:
                 continue
 
-            if not self.header and self.message[-15:] == 'Motors started.':
-                print(self.message)
+            if not self.header and self.message[-16:] == 'Motors started.\n':
                 self.header = True
+                self.data_file.writelines(self.message)
             elif not self.header:
                 continue
 
@@ -158,7 +158,7 @@ class Reader:
                 self.callback(header)
 
             if int(self.bytesread) == self.bytesread and int(self.bytesread) % 10000 == 0:
-                # os.system('cls' if os.name == 'nt' else 'clear')
+                os.system('cls' if os.name == 'nt' else 'clear')
                 spin = ''
                 if self.loading == 0:
                     spin = 'Spinning.'

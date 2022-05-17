@@ -1,3 +1,13 @@
+Startup received!
+
+I ,shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | shin_qw,shin_qx,shin_qy,shin_qz | foot_qw,foot_qx,foot_qy,foot_qz | shin_ax,shin_ay,shin_az | foot_ax,foot_ay,foot_az
+F ,time | val
+L ,time | val
+M ,time | potL_cur,potR_cur | potL_adj,potR_adj | targetPotL,targetPotR | motorCmdL,motorCmdR
+LOG,time | msg
+ERR,msg
+
+LOG,32373 | Motors started.
 I ,1,3,0,2,0,3,1,2,0.0,0.6577,0.515,0.3321,0.6192,0.234,0.0,0.6867,8.59,0.0,0.0,5.44,0.05,7.55
 F ,32390,49
 L ,32390,96
