@@ -16,37 +16,38 @@ keys = {'\nF ' : [(4, uint_to_uint, ()), (2, uint_to_uint, ())],
         '\nL ' : [(4, uint_to_uint, ()), (2, uint_to_uint, ())],
 
         '\nM ' : [(4, uint_to_uint, ()),
-                 (2, uint_to_uint, ()),
-                 (2, uint_to_uint, ()),
-                 (2, uint_to_int, (16)),
-                 (2, uint_to_int, (16)),
-                 (2, uint_to_uint, ()),
-                 (2, uint_to_uint, ()),
-                 (2, uint_to_uint, ()),
-                 (2, uint_to_uint, ())],
+                  (2, uint_to_uint, ()),
+                  (2, uint_to_uint, ()),
+                  (2, uint_to_int, (16)),
+                  (2, uint_to_int, (16)),
+                  (2, uint_to_uint, ()),
+                  (2, uint_to_uint, ()),
+                  (2, uint_to_uint, ()),
+                  (2, uint_to_uint, ())],
 
-        '\nI ' : [(1, uint_to_uint, ()),
-                 (1, uint_to_uint, ()),
-                 (1, uint_to_uint, ()),
-                 (1, uint_to_uint, ()),
-                 (1, uint_to_uint, ()),
-                 (1, uint_to_uint, ()),
-                 (1, uint_to_uint, ()),
-                 (1, uint_to_uint, ()),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 4)),
-                 (2, uint_to_float, (16, 2)),
-                 (2, uint_to_float, (16, 2)),
-                 (2, uint_to_float, (16, 2)),
-                 (2, uint_to_float, (16, 2)),
-                 (2, uint_to_float, (16, 2)),
-                 (2, uint_to_float, (16, 2))]}
+        '\nI ' : [(4, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (1, uint_to_uint, ()),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 4)),
+                  (2, uint_to_float, (16, 2)),
+                  (2, uint_to_float, (16, 2)),
+                  (2, uint_to_float, (16, 2)),
+                  (2, uint_to_float, (16, 2)),
+                  (2, uint_to_float, (16, 2)),
+                  (2, uint_to_float, (16, 2))]}
 
 class Reader:
 
@@ -96,6 +97,7 @@ class Reader:
                 self.safeRead()
                 maybe_key = self.hexToASCII(self.buffer[-6:-4]) + self.hexToASCII(self.buffer[-4:-2]) + self.hexToASCII(self.buffer[-2:])
                 if maybe_key in self.keys:
+                    self.buffer = self.buffer[-6:]
                     self.callback(maybe_key)
                     return
             value = f(int('0x' + self.buffer[-2 * bytes:], 16), args)

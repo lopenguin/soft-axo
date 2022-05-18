@@ -5,7 +5,7 @@ function d = importData(filename)
 
 % Use the gui if the filename is not specified
 if nargin == 0
-    [FileName, PathName, FilterIndex] = uigetfile('*.log', 'Select Log File');
+    [FileName, PathName, FilterIndex] = uigetfile('*.csv', 'Select Log File');
     filename = [PathName, FileName];
 end
 
@@ -23,7 +23,7 @@ errKey = {};
 
 for row = 1:height(allData)
     label = allData{row, 1}{1};
-    r = allData{row,:}
+    r = allData{row,:};
     if label == "I "
         [d.IMU, imuKey] = buildTable(d.IMU, r, imuKey);
     end
@@ -40,13 +40,13 @@ for row = 1:height(allData)
         [d.MOTOR, motorKey] = buildTable(d.MOTOR, r, motorKey);
     end
     
-    if label == "LOG"
-        [d.LOG, logKey] = buildTable(d.LOG, r, logKey);
-    end
-    
-    if label == "ERR"
-        [d.ERR, errKey] = buildTable(d.ERR, r, errKey);
-    end
+%     if label == "LOG"
+%         [d.LOG, logKey] = buildTable(d.LOG, r, logKey);
+%     end
+%     
+%     if label == "ERR"
+%         [d.ERR, errKey] = buildTable(d.ERR, r, errKey);
+%     end
 end
 
 end
@@ -71,9 +71,14 @@ end
 function [tb, key] = buildTable(tb, row, key)
     if isempty(key)
         % we expect the first row to be a heading
-        key = row;
+        key = row(2:end);
     else
-        t = cell2table(row, 'VariableNames', key);
-        tb = [tb; t];
+        try
+            row = str2double(row(2:end));
+            t = array2table(row, 'VariableNames', key);
+            tb = [tb; t];
+        catch
+            disp(row)
+        end
     end
 end

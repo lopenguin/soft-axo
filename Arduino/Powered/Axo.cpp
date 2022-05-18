@@ -281,6 +281,7 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
     uint16_t footAccel_z = floatToInt(footAccel->acceleration.z,2);
 
     SerialOut.print("\nI ");
+    writeBytes(millis() - m_startTime, 4);
     // calibration constants
     writeBytes(m_quatCalShin[0],1); writeBytes(m_quatCalShin[1],1); writeBytes(m_quatCalShin[2],1); writeBytes(m_quatCalShin[3],1);
     writeBytes(m_quatCalFoot[0],1); writeBytes(m_quatCalFoot[1],1); writeBytes(m_quatCalFoot[2],1); writeBytes(m_quatCalFoot[3],1);
@@ -294,7 +295,7 @@ void Axo::printIMUs(sensors_event_t* shinAccel, sensors_event_t* footAccel) {
 
 
 void Axo::printKey() {
-    SerialOut.print("\nI ,shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | "
+    SerialOut.print("\nI ,time,shin_cal_tot,shin_cal_gyr,shin_cal_acc,shin_cal_mag | foot_cal_tot,foot_cal_gyr,foot_cal_acc,foot_cal_mag | "
                       "shin_qw,shin_qx,shin_qy,shin_qz | foot_qw,foot_qx,foot_qy,foot_qz | shin_ax,shin_ay,shin_az | foot_ax,foot_ay,foot_az");
 
     SerialOut.print("\nF ,time | val");
@@ -306,7 +307,12 @@ void Axo::printKey() {
 
 // converts float to 2 characters
 uint16_t Axo::floatToInt(float f, int precision) {
-    return static_cast<uint16_t>(f * pow(10, precision));
+    int16_t i = static_cast<int16_t>(f * pow(10, precision));
+    uint16_t ui = static_cast<uint16_t>(i);
+    if (i < 0) {
+        ui = i + pow(2, 16);
+    }
+    return ui;
 }
 
 void writeBytes(int v, int numBytes) {
