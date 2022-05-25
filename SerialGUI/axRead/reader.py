@@ -1,4 +1,4 @@
-FILENAME = 'capture.txt'
+FILENAME = '/Users/Neil/Documents/GitHub/soft-axo/SerialGUI/axRead/capture0_37.txt'
 
 MESSAGE_FILENAME = 'capture_message.txt'
 DATA_FILENAME = 'data.csv'
@@ -125,8 +125,8 @@ class Reader:
         
         self.buffer += h
         self.parity = not self.parity
-        if self.parity and len(self.buffer) >= 2:
-            self.message += self.hexToASCII(self.buffer[-2:])
+        # if self.parity and len(self.buffer) >= 2:
+            # self.message += self.hexToASCII(self.buffer[-2:])
 
     def halt(self):
         msg_file = open(self.msg_filename, 'w', encoding='utf8')
@@ -151,11 +151,11 @@ class Reader:
             if len(self.buffer) % 2 == 1:
                 continue
 
-            if not self.header and self.message[-16:] == 'Motors started.\n':
-                self.header = True
-                self.data_file.writelines(self.message)
-            elif not self.header:
-                continue
+            # if not self.header and self.message[-16:] == 'Motors started.\n':
+            #     self.header = True
+            #     self.data_file.writelines(self.message)
+            # elif not self.header:
+            #     continue
 
             key = self.hexToASCII(self.buffer[-2:]) # convert last two bytes to ASCII
             header = self.hexToASCII(self.buffer[-6:-4]) + self.hexToASCII(self.buffer[-4:-2]) + key # convert last four bytes to ASCII string
