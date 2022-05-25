@@ -15,8 +15,8 @@ Lorenzo Shaikewitz, 4/17/2022
 #define SerialOut Serial1   // for Wixel streaming
 
 /*Side definition (for IMU offsets)*/
-// #define USE_ZERO_OFFSETS
-#define USE_ONE_OFFSETS
+#define USE_ZERO_OFFSETS
+// #define USE_ONE_OFFSETS
 
 /*Suppression definition*/
 // #define SUPPRESS_IMU

@@ -1,4 +1,4 @@
-FILENAME = 'capture.txt'
+FILENAME = 'capture1.txt'
 
 MESSAGE_FILENAME = 'capture_message.txt'
 DATA_FILENAME = 'data.csv'

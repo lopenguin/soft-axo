@@ -141,6 +141,8 @@ void Axo::begin(bool useIMUOffsets) {
     SerialOut.begin(BAUD);
     SerialOut.setTimeout(timer::SERIAL_TIMEOUT);
     m_startTime = millis();
+
+    SerialOut.println("Compiled: " __DATE__ ", " __TIME__ );
     // TODO: begin e-stops
 
     SerialOut.println("Axo started.");

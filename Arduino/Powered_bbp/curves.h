@@ -16,18 +16,19 @@ STATE VARIABLE: time since last heel strike (trigged by FSR)
 Idea: at 40% of gait time trigger motors for 10% of gait time
 */
 // constants
-static constexpr float triggerPercent{0.4};
-static constexpr int maxAngle{600};
+static constexpr float triggerPercent{0.37};
+static constexpr int maxAngle{800};
+static constexpr float motorOnPercent{0.3};
 static constexpr int zeroAngle{0};
 
 void bangBangAtPushoff(Axo& axo, unsigned long timeSinceLastHeelStrike, unsigned long lastStepTime) {
 
     if ((timeSinceLastHeelStrike > triggerPercent*lastStepTime) &&
-        (timeSinceLastHeelStrike < ((0.2 + triggerPercent)*lastStepTime))) {
+        (timeSinceLastHeelStrike < ((motorOnPercent + triggerPercent)*lastStepTime))) {
         // write the maximum safe angle
         axo.setAngle(maxAngle);
     }
-    else if (timeSinceLastHeelStrike > ((0.2 + triggerPercent)*lastStepTime)) {
+    else if (timeSinceLastHeelStrike > ((motorOnPercent + triggerPercent)*lastStepTime)) {
         // trigger a brief backwards pulse
         axo.setAngle(zeroAngle);
     } 
@@ -35,7 +36,7 @@ void bangBangAtPushoff(Axo& axo, unsigned long timeSinceLastHeelStrike, unsigned
         axo.stopMotors();
     }
 
-    if (timeSinceLastHeelStrike > ((0.4 + triggerPercent)*lastStepTime)) {
+    if (timeSinceLastHeelStrike > ((2*motorOnPercent + triggerPercent)*lastStepTime)) {
         axo.stopMotors();
     }
 }
@@ -73,7 +74,7 @@ void bangBangAtPushoff(Axo& axo, unsigned long timeSinceLastHeelStrike, unsigned
 
 
 
-/* FSR release
+/* FSR release-
 
 */
 
