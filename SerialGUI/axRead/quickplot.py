@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import csv
 import numpy as np
 
-NAME = '/Users/Neil/Documents/GitHub/soft-axo/SerialGUI/axRead/data.csv'
+NAME = r'C:\Users\janwa\OneDrive\Documents\soft-axo\SerialGUI\axRead\data.csv'
 
 l = []
 x = []
 
-min = 10000
-max = 11000
+min = 13000
+max = 15000
 i = 0
 
 with open(NAME) as csvfile:
@@ -18,10 +18,12 @@ with open(NAME) as csvfile:
         if i > max or i < min:
             continue
         if len(row) > 1 and row[0] == 'L ':
-            x.append(row[1])
-            l.append(row[2])
+            x.append(float(row[1]))
+            l.append(float(row[2]))
 
 print('done')
 
-plt.scatter(x,l)
+plt.plot(x,l)
+plt.gca().get_xaxis().set_ticks(np.linspace(np.min(x),np.max(x)))
+plt.gca().get_yaxis().set_ticks(np.linspace(np.min(l),np.max(l)))
 plt.show()

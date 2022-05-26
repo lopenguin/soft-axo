@@ -1,4 +1,4 @@
-FILENAME = '/Users/Neil/Documents/GitHub/soft-axo/SerialGUI/axRead/capture0_37.txt'
+FILENAME = r'C:\Users\janwa\OneDrive\Documents\soft-axo\SerialGUI\axRead\capture0_37.txt'
 
 MESSAGE_FILENAME = 'capture_message.txt'
 DATA_FILENAME = 'data.csv'
