@@ -1,9 +1,9 @@
-PLOTRANGE = 5000;
+PLOTRANGE = 3000;
 
 % Reading
 E = readmatrix('q.csv');
-L = readmatrix('data_L .csv');
-M = readmatrix('data_M .csv');
+L = readmatrix('data_L_good.csv');
+M = readmatrix('data_F .csv');
 S = readmatrix('steps.csv');
 
 % Set up triple graph----------------------------------------------------------
@@ -21,9 +21,6 @@ ylabel('Motor angle (radians)')
 nexttile
 hold on
 scatter(E(:,1), E(:,2),1);
-for index = 1:length(S(:,1))
-    xline(S(index, 1))
-end
 eAxes = gca;
 title('Euler');
 xlabel('Time')
@@ -33,6 +30,9 @@ hold off
 % --- LOAD ---
 nexttile
 scatter(L(:,1),L(:,2),1);
+for index = 1:length(S(:,1))
+    xline(S(index, 1))
+end
 lAxes = gca;
 title('Load');
 xlabel('Time')

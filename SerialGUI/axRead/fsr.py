@@ -16,7 +16,7 @@ with open(FSR_FILE) as ffile:
         i = 0
         step = False
         for value in reader:
-            if float(value[1]) < 1000 and float(value[1]) > 100 and not step:
+            if float(value[1]) < 1000 and float(value[1]) > 350 and not step:
                 step = True
                 if float(value[0]) < 10**7:
                     writer.writerow([value[0]])
