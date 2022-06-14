@@ -1,4 +1,10 @@
-FILENAME = r'C:\Users\janwa\OneDrive\Documents\soft-axo\SerialGUI\axRead\capture0_37.txt'
+#!/usr/bin/python
+
+import sys
+
+assert(len(sys.argv) > 1)
+
+FILENAME = sys.argv[1]
 
 MESSAGE_FILENAME = 'capture_message.txt'
 DATA_FILENAME = 'data.csv'
