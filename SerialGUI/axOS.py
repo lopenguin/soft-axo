@@ -7,17 +7,17 @@ from penguin import Penguins
 
 COM1 = '/dev/cu.usbmodem144401'
 COM2 = None
-SCREEN_SIZE = "1200x400"
 GRAPH_ROWS = 1
 GRAPH_COLUMNS = 1
+SCREEN_SIZE = str(GRAPH_COLUMNS * 380 + 300) + 'x' + str(GRAPH_ROWS * 150)
 NUM_GRAPHS = GRAPH_ROWS * GRAPH_COLUMNS
 PORTS = ['/dev/cu.usbmodem141201']
 
 
-types =     [SimpleVisualization,
+types =     [Com,
             ]
 
-args =      [[COM1],
+args =      [['/dev/cu.usbserial-14130'],
             ]
 
 assert(len(types) == len(args))
@@ -30,7 +30,7 @@ root.geometry(SCREEN_SIZE)
 app = window.Window(vis_types=types,
                     vis_args=args,
                     master=root,
-                    graph_rows=GRAPH_ROWS,
-                    graph_columns=GRAPH_COLUMNS)
+                    graph_rows=GRAPH_COLUMNS,
+                    graph_columns=GRAPH_ROWS)
 tk.mainloop()
 

@@ -43,6 +43,8 @@ class Window(Frame):
     def clear(self):      
         print("--- OUTPUT CLEARED ---")
         self.textSerial.delete(0, len(self.textSerial.get()))
+        self.terminal.delete(1.0, 'end')
+
 
 
     def send(self):
@@ -66,7 +68,7 @@ class Window(Frame):
         self.terminal = tk.Text(self, width=50, height=10)
         self.terminal.grid(row=0,column=(self.graph_columns + 1))
 
-
+        self.terminal.insert('1.0', 'Initialized...')
         self.buttonClear.bind(lambda e:self.Clear)
 
 
@@ -79,6 +81,7 @@ class Window(Frame):
         self.ani = []
         for i in range(self.num_graphs):
             self.figures.append(plt.Figure(figsize=(5, 2)))
+            self.vis_args[i].append(self.terminal)
             self.vis.append(self.vis_types[i](self.figures[-1], 1, 1, 1, self.vis_args[i]))
             self.canvases.append(FigureCanvasTkAgg(self.figures[-1], master=self))
             self.canvases[-1].get_tk_widget().grid(column=(i // self.graph_columns), row=(i % self.graph_columns))

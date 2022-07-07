@@ -227,7 +227,7 @@ a:::::aaaa::::::a   x:::::x  x:::::x   OO:::::::::::::OO S::::::SSSSSS:::::S
 
 
         """
-        Penguins.printing(a, 0.0005)
+        Penguins.printing(a, 0.05)
 
     @classmethod
     def amberlab(cls):
@@ -254,7 +254,7 @@ AAAAAAA                   AAAAAAAmmmmmm   mmmmmm   mmmmmmbbbbbbbbbbbbbbbb       
                                                                                                                                                                                       
                                                                                                                                                                                       
         """
-        cls.printing(a, 0.000001)
+        cls.printing(a, 0.0001)
 
     @classmethod
     def printing(cls, str, delay):

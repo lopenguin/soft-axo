@@ -16,6 +16,7 @@ class Com(Visualization):
     MAX_SIZE = 100
 
     def __init__(self, fig, nrows, ncols, index, args=[]):
+        self.textbox = None
         self.fig = fig
         self.x = [0]
         self.ax = self.fig.add_subplot(nrows, ncols, index)
@@ -28,6 +29,8 @@ class Com(Visualization):
         self.sio = None
         self.data = [0]
         self.open_port()
+
+        self.textbox = args[1]
 
 
     def init_animation(self):
@@ -75,6 +78,11 @@ class Com(Visualization):
         b = (self.ser.readline()).decode("utf-8")
         if (b == '' or b[0:-2] == ''):
             return
-        val = float(b[0:-2])
-        self.x.append(self.x[-1] + 1)
-        self.data.append(val)
+        try:
+            val = float(b[0:-2])
+            self.x.append(self.x[-1] + 1)
+            self.data.append(val)
+        except ValueError:
+            print('COM ERROR: Recieved non-float')
+        if self.textbox:
+            self.textbox.insert('1.0', str(b))
