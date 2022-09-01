@@ -26,7 +26,7 @@ class Window(Frame):
         self.num_graphs = graph_columns * graph_rows
         if (not vis_types):
             self.vis_types = []
-            for i in range(graph_columns * graph_rows):
+            for _ in range(graph_columns * graph_rows):
                 self.vis_types.append(SimpleVisualization)
         else:
             self.vis_types = vis_types

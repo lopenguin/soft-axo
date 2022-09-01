@@ -63,7 +63,7 @@ with open(FILENAME, newline='\n') as csvfile:
     
     for i in range(len(OUTPUT_FILES)):
         with open(OUTPUT_FILES[i],'w') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',',lineterminator='')
+            writer = csv.writer(csvfile, delimiter=',',lineterminator='\n')
             for elem in data[OUTPUT[i][0]]:
                 writer.writerow(elem)
     
