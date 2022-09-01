@@ -90,6 +90,9 @@ def animate(i):
         if i > 5:
             break
 
+    # for now, we hardcode. really, this should be the gcd of main freq
+    print('\nPercent gait =', str(round((np.pi + np.arctan2(dft[4].imag, dft[4].real)) / (2 * np.pi) * 100)) + '%')
+
 anim=FuncAnimation(fig,animate,repeat=True,blit=False,frames=100,
                              interval=100)
   
