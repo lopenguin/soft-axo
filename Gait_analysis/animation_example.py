@@ -8,6 +8,8 @@ import csv, os
 START = 40000
 END = 41000
 N = END - START
+DFT_SIZE = 500
+assert(DFT_SIZE < END - START)
 FILENAME = r'q.csv'
 # PROFILE = [np.cos(2 * np.pi * x) + np.cos(9 * 2 * np.pi * x) \
 #            for x in np.linspace(0, 1, N)]
@@ -25,6 +27,12 @@ with open(FILENAME) as file:
             print(row)
             break
 
+def Euclid_GCD(x, y):
+    if x == 0: return y
+    elif y == 0: return x
+    else:
+        r = x % y
+        return Euclid_GCD(y, r)
 
 def DFT(x):
     """
@@ -39,7 +47,7 @@ def DFT(x):
     e = np.exp(-2j * np.pi * k * n / _N)
     
     X = np.dot(e, x)
-    
+    print("shape", np.shape(e))
     return X
 
    
@@ -49,7 +57,7 @@ fig = plt.figure()
    
 # marking the x-axis and y-axis
 plt.subplot(2,1,1)
-s, e = 0, 500
+s, e = 0, DFT_SIZE
 dft = DFT(PROFILE[s:e])[:50]
 bar = np.array([np.linalg.norm(x) for x in dft]) * 2 / len(PROFILE)
 angles = np.array([np.arctan2(np.imag(x), np.real(x)) for x in dft])
@@ -72,9 +80,9 @@ def animate(i):
     global s, e, line
     s += 5
     e += 5
-    if e > 900:
+    if e > END - START:
         s = 0
-        e = 500
+        e = DFT_SIZE
     dft = DFT(PROFILE[s:e])[:50]
     bar = np.array([np.linalg.norm(x) for x in dft]) * 2 / len(PROFILE)
     angles = np.array([np.arctan2(np.imag(x), np.real(x)) for x in dft])
@@ -84,21 +92,19 @@ def animate(i):
     line.set_ydata(PROFILE[s:e])
     os.system('cls' if os.name == 'nt' else 'clear')
     i = 0
+    biggest = []
     for elem in np.flip(np.sort(bar)):
+        biggest.append(list(bar).index(elem))
         print(list(bar).index(elem), elem)
         i += 1
         if i > 5:
             break
 
+    print("GCD = ", Euclid_GCD(biggest[1], biggest[2]))
     # for now, we hardcode. really, this should be the gcd of main freq
     print('\nPercent gait =', str(round((np.pi + np.arctan2(dft[4].imag, dft[4].real)) / (2 * np.pi) * 100)) + '%')
 
 anim=FuncAnimation(fig,animate,repeat=True,blit=False,frames=100,
                              interval=100)
-  
-
-
-
-
 
 plt.show()

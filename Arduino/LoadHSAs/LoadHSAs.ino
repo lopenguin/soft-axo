@@ -3,6 +3,8 @@ Sets the HSA to loading angles and provides utility for testing.
 Only uses potentiometers.
 
 Lorenzo Shaikewitz, 4/19/2022
+
+WARNING DOES NOT WORK WITH SILVER GEARBOXES
 */
 #include "Axo.h"
 #include "constants.h"
