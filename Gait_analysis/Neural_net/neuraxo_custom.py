@@ -64,4 +64,5 @@ simple_network = Nnetwork(no_of_in_nodes=2,
 
 # Run simple_network for arrays, lists and tuples with shape (2):
 # and get a result:
-simple_network.run([(3, 4)])
+ret = simple_network.run([(3, 4)])
+print(ret)
