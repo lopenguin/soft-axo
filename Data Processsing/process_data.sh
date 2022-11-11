@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 echo "Converting binary data..."
-python3 Scripts/reader.py "${1}" "Data"
+python3 Scripts/reader.py "${1}"
 echo "Binary data converted to ASCII."
 
 echo "Generating individual data files..."
