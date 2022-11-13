@@ -1,5 +1,5 @@
-DATA = r'C:\Users\janwa\OneDrive\Documents\soft-axo\Gait_analysis\Neural_net\pima-indians-diabetes.csv'
-N_FEATURES = 8
+DATA = r'data.csv'
+N_FEATURES = 3
 
 LAYERS = [12, 30, 8]
 
@@ -13,29 +13,29 @@ from tensorflow.keras.layers import Layer
 
 # load the dataset
 dataset = loadtxt(DATA, delimiter=',')
+print(dataset)
+print('askdflkjsaldf')
 # split into input (X) and output (y) variables
-X = dataset[:,0:N_FEATURES]
-y = dataset[:,N_FEATURES]
+X = dataset[:, 2:N_FEATURES + 2] #dataset[0:,0:N_FEATURES]
+y = dataset[:,N_FEATURES + 1]
+print(X)
 # define the keras model
 model = Sequential()
 model.add(Dense(LAYERS[0], input_shape=(N_FEATURES,), activation='relu'))
 for i in LAYERS[1:]:
     model.add(Dense(i, activation='relu'))
-model.add(Add())
+# model.add(Add())
 model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 # fit the keras model on the dataset
-model.fit(X, y, epochs=150, batch_size=10)
+model.fit(X, y, epochs=20, batch_size=100)
 # evaluate the keras model
 _, accuracy = model.evaluate(X, y)
 print('Accuracy: %.2f' % (accuracy*100))
 
-class arcTan(Layer):
-    """
-    Computes the arctangent of two outputs
-    """
-    raise NotImplemented
+y_pred = model.predict(X[0:1000])
+print(y_pred)
 
 # input1 = tf.keras.layers.Input(shape=(16,))
 # x1 = tf.keras.layers.Dense(8, activation='relu')(input1)
