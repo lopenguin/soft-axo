@@ -16,7 +16,7 @@ dataset = loadtxt(DATA, delimiter=',')
 print(dataset)
 print('askdflkjsaldf')
 # split into input (X) and output (y) variables
-X = dataset[:, 2:N_FEATURES + 2] #dataset[0:,0:N_FEATURES]
+X = dataset[:, 2:N_FEATURES + 2] # CURRENTLY INPUTTING TRIVIAL PROBLEM DATA.....
 y = dataset[:,N_FEATURES + 1]
 print(X)
 # define the keras model
