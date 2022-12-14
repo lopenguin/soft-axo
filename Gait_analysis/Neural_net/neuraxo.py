@@ -1,5 +1,5 @@
 DATA = r'data.csv'
-N_FEATURES = 3
+N_FEATURES = 4
 
 LAYERS = [12, 30, 8]
 
@@ -16,12 +16,12 @@ dataset = loadtxt(DATA, delimiter=',')
 print(dataset)
 print('askdflkjsaldf')
 # split into input (X) and output (y) variables
-X = dataset[:, 2:N_FEATURES + 2] # CURRENTLY INPUTTING TRIVIAL PROBLEM DATA.....
-y = dataset[:,N_FEATURES + 1]
+X = dataset[:, 1:N_FEATURES] # CURRENTLY INPUTTING TRIVIAL PROBLEM DATA.....
+y = dataset[:,N_FEATURES]
 print(X)
 # define the keras model
 model = Sequential()
-model.add(Dense(LAYERS[0], input_shape=(N_FEATURES,), activation='relu'))
+model.add(Dense(LAYERS[0], input_shape=(N_FEATURES - 1,), activation='relu'))
 for i in LAYERS[1:]:
     model.add(Dense(i, activation='relu'))
 # model.add(Add())
@@ -29,7 +29,7 @@ model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 # fit the keras model on the dataset
-model.fit(X, y, epochs=20, batch_size=100)
+model.fit(X, y, epochs=20, batch_size=500)
 # evaluate the keras model
 _, accuracy = model.evaluate(X, y)
 print('Accuracy: %.2f' % (accuracy*100))
