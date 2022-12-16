@@ -9,11 +9,11 @@ class Labeler:
 
     
     def fsr2steps(self, labels):
-        steps = []
+        steps = [labels[0][0]]
         stepped = False
         min_t, min_x = 99999, 99999
         for i, elem in enumerate(labels[0]):
-            if not stepped and labels[1][i] < 20:
+            if not stepped and labels[1][i] < self.threshold:
                 stepped = True
             elif stepped:
                 if labels[1][i] < min_x:
@@ -26,15 +26,20 @@ class Labeler:
         return steps
 
 
-    def steps2percentage(self, steps):
-        ret = [[], []]
+    def steps2percentage(self, steps, labels):
+        ret = [[], [], []]
+        k = 0
         for i in range(0, len(steps) - 1):
             start, final = steps[i], steps[i + 1]
             t = 0
             while t < final - start:
+                ret[2].append(labels[1][i])
                 ret[1].append(t / (final - start))
                 ret[0].append(t + start)
                 t += 0.005
+                # print('t', t + start)
+                # print('T', labels[0][k])
+                k += 1
         return ret
 
     def write(self):
@@ -46,7 +51,7 @@ class Labeler:
                     labels[0].append(float(row[0]))
                     labels[1].append(float(row[1]))
             steps = self.fsr2steps(labels)
-            gait_labels = self.steps2percentage(steps)
+            gait_labels = self.steps2percentage(steps, labels)
 
             if self.file_out != None:
                 with open(self.file_out, 'w') as wfile:

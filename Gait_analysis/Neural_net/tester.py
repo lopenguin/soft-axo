@@ -1,5 +1,5 @@
 DATA = r'func.csv'
-N_FEATURES = 3
+N_FEATURES = 5
 
 LAYERS = [12, 30, 8]
 
@@ -16,8 +16,8 @@ dataset = loadtxt(DATA, delimiter=',')
 # print(dataset)
 print('askdflkjsaldf')
 # split into input (X) and output (y) variables
-X = dataset[:, 0:N_FEATURES] # CURRENTLY INPUTTING TRIVIAL PROBLEM DATA.....
-y = dataset[:,N_FEATURES]
+X = dataset[:, 1:N_FEATURES + 1] # CURRENTLY INPUTTING TRIVIAL PROBLEM DATA.....
+y = dataset[:, N_FEATURES + 1]
 print(X[:,0])
 # exit()
 # define the keras model
@@ -30,13 +30,23 @@ model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 # fit the keras model on the dataset
-model.fit(X, y, epochs=20, batch_size=10)
+model.fit(X[:9000], y[:9000], epochs=15, batch_size=5)
 # evaluate the keras model
-_, accuracy = model.evaluate(X, y)
-print('Accuracy: %.2f' % (accuracy*100))
+# _, accuracy = model.evaluate(X, y)
+# print('Accuracy: %.2f' % (accuracy*100))
 
-y_pred = model.predict(X[::500])
-print(y_pred)
+error = 0
+wrong, tol = 0, 0.075
+y_pred = model.predict(X[9000:])
+for i, yp in enumerate(y_pred):
+    error += abs(y[5000 + i] - yp)
+    if abs(y[5000 + i] - yp) >= tol:
+        wrong += 1
+
+# print(y[:200], y_pred[:200])
+print('Off by (avg):',error**0.5 / len(y))
+print('Accuracy:', 1 - wrong / len(y))
+# print(y_pred)
 
 # input1 = tf.keras.layers.Input(shape=(16,))
 # x1 = tf.keras.layers.Dense(8, activation='relu')(input1)
