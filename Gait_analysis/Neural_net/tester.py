@@ -1,7 +1,7 @@
 DATA = r'func.csv'
-N_FEATURES = 5
+N_FEATURES = 1
 
-LAYERS = [12, 30, 8]
+LAYERS = [3]
 
 # first neural network with keras tutorial
 from numpy import loadtxt
@@ -30,22 +30,26 @@ model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 # fit the keras model on the dataset
-model.fit(X[:9000], y[:9000], epochs=15, batch_size=5)
+TRAIN = 20000
+model.fit(X[:TRAIN], y[:TRAIN], epochs=1, batch_size=5)
 # evaluate the keras model
 # _, accuracy = model.evaluate(X, y)
 # print('Accuracy: %.2f' % (accuracy*100))
 
 error = 0
-wrong, tol = 0, 0.075
-y_pred = model.predict(X[9000:])
+tols = [0.01, 0.05, 0.075, 0.1, 0.25]
+wrong = [0] * len(tols)
+y_pred = model.predict(X[TRAIN:])
 for i, yp in enumerate(y_pred):
-    error += abs(y[5000 + i] - yp)
-    if abs(y[5000 + i] - yp) >= tol:
-        wrong += 1
+    error += abs(y[TRAIN + i] - yp)
+    for k, t in enumerate(tols):
+        if abs(y[TRAIN + i] - yp) >= t:
+            wrong[k] += 1
 
 # print(y[:200], y_pred[:200])
 print('Off by (avg):',error**0.5 / len(y))
-print('Accuracy:', 1 - wrong / len(y))
+for w, t in zip(wrong, tols):
+    print('NN is within ' + str(t * 100) + r'% of the time', 1 - w / len(y_pred))
 # print(y_pred)
 
 # input1 = tf.keras.layers.Input(shape=(16,))

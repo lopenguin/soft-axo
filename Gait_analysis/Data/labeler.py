@@ -60,3 +60,20 @@ class Labeler:
                         writer.writerow([g])
 
             return gait_labels
+
+    def real_write(self):
+        labels = [[], []]
+        with open(self.file_in) as ffile:
+            reader = csv.reader(ffile)
+            for row in reader:
+                if row[0] == 'Header': continue
+                labels[0].append(float(row[0]))
+                labels[1].append(float(row[1]) / 100)
+
+        if self.file_out != None:
+            with open(self.file_out, 'w') as wfile:
+                writer = csv.writer(wfile, lineterminator='\n')
+                for g in labels:
+                    writer.writerow([g])
+
+        return labels

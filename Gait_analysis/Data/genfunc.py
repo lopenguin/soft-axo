@@ -4,7 +4,8 @@ import csv
 WFILE = r"func.csv"
 func = lambda x : np.sin(x)
 
-MEASURES = [np.mean,
+MEASURES = [lambda x : x[-1],
+            np.mean,
             np.std,
             np.median,
             np.max,
@@ -20,6 +21,6 @@ with open(WFILE, 'w') as file:
         else:
             buff = buff[1:] + [func(x)]
             towrite = [measure(buff) for measure in MEASURES]
-            writer.writerow([x] + towrite + [x])
+            writer.writerow([x] + [towrite[0]] + [x])
 
 print('Done')

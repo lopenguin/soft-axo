@@ -28,23 +28,26 @@ model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 # fit the keras model on the dataset
-model.fit(X[:20000], y[:20000], epochs=1, batch_size=1)
+TRAIN = 20000
+model.fit(X[:TRAIN], y[:TRAIN], epochs=3, batch_size=5)
 # evaluate the keras model
 # _, accuracy = model.evaluate(X, y)
 # print('Accuracy: %.2f' % (accuracy*100))
 print(len(X))
 error = 0
-wrong, tol = 0, 0.075
-y_pred = model.predict(X[20000:])
+tols = [0.01, 0.05, 0.075, 0.1, 0.20]
+wrong = [0] * len(tols)
+y_pred = model.predict(X[TRAIN:])
 for i, yp in enumerate(y_pred):
-    error += abs(y[20000 + i] - yp)
-    if abs(y[20000 + i] - yp) >= tol:
-        wrong += 1
+    error += abs(y[TRAIN + i] - yp)
+    for k, t in enumerate(tols):
+        if abs(y[TRAIN + i] - yp) >= t:
+            wrong[k] += 1
 
 # print(y[:200], y_pred[:200])
-print('Off by (avg):',error**0.5 / len(y))
-print('Accuracy:', 1 - wrong / len(y))
-
+print('Off by (avg):',error**0.5 / len(y_pred))
+for w, t in zip(wrong, tols):
+    print('NN is within ' + str(t * 100) + r'% of the time', 1 - w / len(y_pred))
 # input1 = tf.keras.layers.Input(shape=(16,))
 # x1 = tf.keras.layers.Dense(8, activation='relu')(input1)
 # input2 = tf.keras.layers.Input(shape=(32,))
