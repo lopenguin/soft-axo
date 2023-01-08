@@ -7,10 +7,10 @@ import sys
 sys.path.append('../util')
 import stats
 
-DATA = r'pdata.csv'
+DATA = r'processed.csv'
 N_FEATURES = 21
-EPOCHS = 30 #3
-BATCH_SIZE = 15 #5
+EPOCHS = 3 #30
+BATCH_SIZE = 5 #5
 ACTIVATION = 'sigmoid'
 TRAIN = 20000
 
@@ -38,5 +38,11 @@ error = 0
 tols = [0.01, 0.05, 0.075, 0.1, 0.20]
 wrong = [0] * len(tols)
 y_pred = model.predict(X[TRAIN:])
+for why, yp in zip(y[TRAIN:], y_pred):
+    if (why < 0.5) != (yp[0] < 0.5):
+        error += 1
 
-stats.get_stats(y_pred, y[TRAIN:], tols=tols, max=1)
+print(error / (len(y_pred)))
+print(error)
+
+# stats.get_stats(y_pred, y[TRAIN:], tols=tols, max=1)
