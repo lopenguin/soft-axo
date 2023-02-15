@@ -9,7 +9,7 @@ from matplotlib import animation
 
 class Com(Visualization):
 
-    BAUD = 9800
+    BAUD = 59200
     TIMEOUT = 1
     SIZE = 100
     CONNECTED = False

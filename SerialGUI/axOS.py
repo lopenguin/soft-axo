@@ -5,25 +5,25 @@ from com import Com
 from penguin import Penguins
 
 
-COM1 = '/dev/cu.usbmodem144401'
+COM1 = '/dev/cu.usbmodem6A_35_4A_B71'
 COM2 = None
 GRAPH_ROWS = 1
 GRAPH_COLUMNS = 1
 SCREEN_SIZE = str(GRAPH_COLUMNS * 380 + 300) + 'x' + str(GRAPH_ROWS * 150)
 NUM_GRAPHS = GRAPH_ROWS * GRAPH_COLUMNS
-PORTS = ['/dev/cu.usbmodem141201']
+PORTS = ['/dev/cu.usbmodem6A_35_4A_B71']
 
 
-types =     [SimpleVisualization,
+types =     [Com,
             ]
 
-args =      [['/dev/cu.usbserial-14130'],
+args =      [[COM1],
             ]
 
 assert(len(types) == len(args))
 
 
-Penguins.amberlab()
+# Penguins.amberlab()
 print("\nWelcome to axOS :)")
 root = tk.Tk()
 root.geometry(SCREEN_SIZE)
