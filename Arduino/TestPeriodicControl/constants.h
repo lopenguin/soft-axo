@@ -11,29 +11,24 @@ Lorenzo Shaikewitz, 4/17/2022
 #include <Adafruit_BNO055.h>
 
 /*Serial definition*/
-// #define SerialOut Serial    // for serial monitor
-#define SerialOut Serial1   // for Wixel streaming
+#define SerialOut Serial    // for serial monitor
+// #define SerialOut Serial1   // for Wixel streaming
 
 /*Side definition (for IMU offsets)*/
 #define USE_ZERO_OFFSETS
 // #define USE_ONE_OFFSETS
 
 /*Suppression definition*/
-// #define SUPPRESS_IMU
-// #define SUPPRESS_FSR
-// #define SUPPRESS_LOAD
-// #define SUPPRESS_MOTOR
-// #define SUPPRESS_LOG
+#define SUPPRESS_IMU
+#define SUPPRESS_FSR
+#define SUPPRESS_LOAD
+#define SUPPRESS_MOTOR
+#define SUPPRESS_LOG
 
 constexpr int BAUD{115200};
 
 namespace control {
-    constexpr int FSR_HIGH_THRESH{420};
-    constexpr int FSR_LOW_THRESH{100};
-    constexpr float ALPHA_FSR{0.1};
-    constexpr float ALPHA_STEP{0.92};
-
-    constexpr int MIN_STEP_TIME{500};
+    constexpr int FSR_THRESH{450};
 }
 
 namespace pin {
@@ -60,7 +55,7 @@ namespace timer {
     constexpr unsigned int LOADCELL{10}; // ms (TODO good rate??)
     constexpr unsigned int HEARTBEAT{2000}; // ms
 
-    constexpr unsigned int MOTOR{1}; // ms (TODO: faster??)
+    constexpr unsigned int MOTOR{10}; // ms (TODO: faster??)
 
     constexpr unsigned int SERIAL_TIMEOUT{500}; // ms
 }

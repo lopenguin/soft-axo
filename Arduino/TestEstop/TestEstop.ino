@@ -1,11 +1,7 @@
 /*
-Main code to run the ankle exoskeleton. Sensor gathering/printing, low-level
-motor control, and other secondary functions are abstracted into the Axo class.
-This file focuses on the high-level control scheme.
+Code for testing the estop
 
-CONTROL: BANG BANG AT PUSHOFF
-
-Lorenzo Shaikewitz, 4/19/2022
+Lorenzo Shaikewitz, 1/8/2023
 */
 #include "Axo.h"
 #include "constants.h"
@@ -14,25 +10,21 @@ Lorenzo Shaikewitz, 4/19/2022
 
 Axo axo;
 
-Metro controlTimer{2}; // 500 Hz (2 ms)
+Metro controlTimer{100}; // 100 Hz
 unsigned long startTime{};
-unsigned long startTimeFSR{};
-unsigned long stepTime{2000};
+constexpr unsigned long stepTime{2000}; // SET STEP TIME HERE
 bool fsrHigh{};
 float backPulseTime{500};
 
-float fsrAccum{};
-float stepTimeAccum{1500};
-
-float triggerPercent{0.3};
-float newTriggerPercent{0.3};
-float motorOnPercent{0.35};
-float newMotorOnPercent{0.35};
+float triggerPercent{0.35};
+float newTriggerPercent{0.35};
+float motorOnPercent{0.2};
+float newMotorOnPercent{0.2};
 
 void setup() {
     // start up sensors
     axo.begin();
-    SerialOut.println("MODE: BANG BANG AT PUSHOFF");
+    SerialOut.println("TESTING PERIODIC CONTROL");
     axo.setBlueLED(HIGH);
 
     // wait for startup command
@@ -41,16 +33,9 @@ void setup() {
         if (SerialOut.available()) {
             if (SerialOut.read() == 's') {
                 SerialOut.println("Startup received!");
-                axo.resetEstop();
                 break;
             }
         }
-        // else if (axo.resetEstop()) {
-        //     SerialOut.println("Startup received!");
-        //     delay(500);
-        //     axo.resetEstop();
-        //     break;
-        // }
         delay(100);
     }
     axo.printKey();
@@ -58,7 +43,7 @@ void setup() {
     axo.setGreenLED(HIGH);
 
     // start motors
-    axo.beginMotors();
+    // axo.beginMotors();
 
     // reset control timer
     controlTimer.reset();
@@ -72,31 +57,17 @@ void loop() {
         // compute the time elapsed
         unsigned long currentTime = millis();
         unsigned long dt = currentTime - startTime;
-        unsigned long dtFSR = currentTime - startTimeFSR;
 
         // execute control
-        bangBangAtPushoff(axo, dt, stepTimeAccum);
+        // bangBangAtPushoff(axo, dt, stepTime);
 
-        // check the FSR for a step
-        int fsr = axo.getFSR();
-        fsrAccum = control::ALPHA_FSR*fsr + (1.0 - control::ALPHA_FSR)*fsrAccum;
-        if (fsr > control::FSR_HIGH_THRESH) {
-            // want to record only the first heel strike
-            if (!fsrHigh) {
-                fsrHigh = true;
-                stepTime = dt;
-                stepTimeAccum = control::ALPHA_STEP*stepTime + (1.0 - control::ALPHA_STEP)*stepTimeAccum;
+        // keep a constant period
+        if (dt > stepTime) {
+            startTime = currentTime;
 
-                startTime = currentTime;
-                triggerPercent = newTriggerPercent;
-                motorOnPercent = newMotorOnPercent;
-                #ifndef SUPPRESS_LOG
-                unsigned long t{millis() - axo.startTime()};
-                SerialOut.printf("\nLOG,%d | Step Recorded! %u", t, dt);
-                #endif
-            }
-        } else if (fsr < control::FSR_LOW_THRESH) {
-            fsrHigh = false;
+            // update trigger percentages at the end of every step
+            triggerPercent = newTriggerPercent;
+            motorOnPercent = newMotorOnPercent;
         }
     }
 
@@ -112,8 +83,6 @@ void loop() {
                 unsigned long t{millis() - axo.startTime()};
                 SerialOut.printf("\nLOG,%d | Received x. Terminating Axo...",t);
                 #endif
-                axo.stopMotors();
-                delay(1000);
                 axo.detachMotors();
                 axo.setBlueLED(HIGH);
                 axo.setGreenLED(LOW);
@@ -125,7 +94,6 @@ void loop() {
 
             case 'a': {
                 // expect a float percentage
-                axo.stopMotors();
                 newTriggerPercent = SerialOut.parseFloat();
                 if (newTriggerPercent > 1.0)
                     newTriggerPercent = 1.0;
@@ -139,7 +107,6 @@ void loop() {
 
             case 't': {
                 // expect a float percentage
-                axo.stopMotors();
                 newMotorOnPercent = SerialOut.parseFloat();
                 if (newMotorOnPercent > 1.0)
                     newMotorOnPercent = 1.0;
@@ -189,3 +156,25 @@ void bangBangAtPushoff(Axo& axo, unsigned long deltat, unsigned long predStepTim
         axo.stopMotors();
     }
 }
+
+// void bangBangAtPushoff(Axo& axo, unsigned long timeSinceLastHeelStrike, unsigned long lastStepTime) {
+
+//     if ((timeSinceLastHeelStrike > triggerPercent*lastStepTime) &&
+//         (timeSinceLastHeelStrike < ((motorOnPercent + triggerPercent)*lastStepTime))) {
+//         // write the maximum safe angle
+//         axo.setAngle(maxAngle);
+//     }
+//     else if (timeSinceLastHeelStrike > ((motorOnPercent + triggerPercent)*lastStepTime)) {
+//         // trigger a brief backwards pulse
+//         axo.setAngle(zeroAngle);
+//     } 
+//     else {
+//         axo.stopMotors();
+//     }
+
+//     if (timeSinceLastHeelStrike > ((2*motorOnPercent + triggerPercent)*lastStepTime)) {
+//         axo.stopMotors();
+//         triggerPercent = newTriggerPercent;
+//         motorOnPercent = newMotorOnPercent;
+//     }
+// }

@@ -18,12 +18,26 @@ with open(FILENAME) as file:
     reader = csv.reader(file)
     for i, row in enumerate(reader):
         if i > START:
-            PROFILE.append(float(row[1]))
+            q0 = float(row[1])
+            q1 = float(row[2])
+            q2 = float(row[3])
+            q3 = float(row[4])
+            # PROFILE.append(float(row[1]))
+            # PROFILE.append(np.arctan2(2*(q0*q1 + q2*q3), 1 - 2*(q1*q1 + q2*q2)))
+            # PROFILE.append(np.arctan2(2*(q0*q3+q1*q2), 1 - 2*(q2*q2 + q3*q3)))
+            PROFILE.append(np.arcsin(2*(float(row[1])*float(row[3]) - float(row[2])*float(row[4])))) # RIGHT ONE!
             TIME.append(float(row[0]))
         if i > END:
             print(row)
             break
 
+# differentiate
+# DERIVATIVE = []
+# for i in range(len(PROFILE)-1):
+#     DERIVATIVE.append((PROFILE[i+1] - PROFILE[i]) / (TIME[i+1] - TIME[i]))
+
+# PROFILE = DERIVATIVE
+# TIME = TIME[:-1]
 
 def DFT(x):
     """

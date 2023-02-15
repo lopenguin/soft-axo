@@ -44,8 +44,6 @@ public:
     int getFSR()   { return m_fsrVal; }
     int getLoad()  { return m_loadCellVal; }
 
-    bool resetEstop();  // reads estop and resets value to false
-
 private:
     // Metro timers (for sensors)
     Metro m_timerIMU;

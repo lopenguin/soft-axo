@@ -19,7 +19,8 @@ with open(FILENAME) as file:
     reader = csv.reader(file)
     for i, row in enumerate(reader):
         if i > START:
-            PROFILE.append(float(row[1]))
+            # PROFILE.append(float(row[1]))
+            PROFILE.append(np.arcsin(2*(float(row[1])*float(row[3]) - float(row[2])*float(row[4]))))
             TIME.append(float(row[0]))
         if i > END:
             print(row)

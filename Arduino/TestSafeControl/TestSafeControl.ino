@@ -11,8 +11,8 @@
 // CONSTANTS-------------------------------------------------------------------
 const int MOTOR_PIN = 4;
 const int ENCODER_PIN = 15;
-//const int MOTOR_PIN = 3;
-//const int ENCODER_PIN = 14;
+// const int MOTOR_PIN = 3;
+// const int ENCODER_PIN = 14;
 
 // ESC CONSTANTS
 const int CALIBRATION_PWM = 1500;

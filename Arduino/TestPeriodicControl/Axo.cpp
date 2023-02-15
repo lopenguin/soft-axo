@@ -100,6 +100,9 @@ void Axo::updateMotors() {
     // use p control to compute target
     int lMS{ p(m_targetAngleL, currPotL + 1023*m_turnsL) };
     int rMS{ p(m_targetAngleR, currPotR + 1023*m_turnsR) };
+    // DEBUG
+    // SerialOut.printf("%d, %d\n", lMS, rMS);
+    // SerialOut.printf("%d, %d\n", m_targetAngleR, currPotR + 1023*m_turnsR);
 
     // check if we are sufficiently close to goal (TODO: TEST!!! dangerous)
     // if ((abs(lMS - motor::CENTER) < motor::LOWMS_THRESHOLD) && (abs(rMS - motor::CENTER) < motor::LOWMS_THRESHOLD) {
@@ -167,33 +170,33 @@ void Axo::begin(bool useIMUOffsets) {
 
 
     /** IMUs **/
-    bool shinIMUStarted = m_shinIMU.begin();
-    bool footIMUStarted = m_footIMU.begin();
+    // bool shinIMUStarted = m_shinIMU.begin();
+    // bool footIMUStarted = m_footIMU.begin();
 
-    if (!shinIMUStarted) {
-        SerialOut.println("\nERR,Error connecting to shin IMU. Foot IMU status unknown.");
-        while (1);
-    }
-    if (!footIMUStarted) {
-        SerialOut.println("\nERR,Error connecting to foot IMU. Shin IMU successfully connected.");
-        while (1);
-    }
+    // if (!shinIMUStarted) {
+    //     SerialOut.println("\nERR,Error connecting to shin IMU. Foot IMU status unknown.");
+    //     while (1);
+    // }
+    // if (!footIMUStarted) {
+    //     SerialOut.println("\nERR,Error connecting to foot IMU. Shin IMU successfully connected.");
+    //     while (1);
+    // }
 
-    delay(1000);
+    // delay(1000);
 
-    // set up external crystal for optimal performance
-    m_shinIMU.setExtCrystalUse(true);
-    m_footIMU.setExtCrystalUse(true);
+    // // set up external crystal for optimal performance
+    // m_shinIMU.setExtCrystalUse(true);
+    // m_footIMU.setExtCrystalUse(true);
 
-    // set IMU offsets
-    if (useIMUOffsets) {
-        m_shinIMU.setSensorOffsets(offsets::shin);
-        m_footIMU.setSensorOffsets(offsets::foot);
-    }
+    // // set IMU offsets
+    // if (useIMUOffsets) {
+    //     m_shinIMU.setSensorOffsets(offsets::shin);
+    //     m_footIMU.setSensorOffsets(offsets::foot);
+    // }
 
-    // Switch to NDOF mode--use all 9 DOFs, 100 Hz fusion data
-    m_shinIMU.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
-    m_footIMU.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
+    // // Switch to NDOF mode--use all 9 DOFs, 100 Hz fusion data
+    // m_shinIMU.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
+    // m_footIMU.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
 
 
     /** FSR **/
@@ -211,34 +214,36 @@ void Axo::spin() {
     // call the heartbeat (no heartbeat needed)
     // heartbeat();
 
-    if (m_timerIMU.check()) {
-        // Calibration status
-        m_shinIMU.getCalibration(&m_quatCalShin[0], &m_quatCalShin[1], &m_quatCalShin[2], &m_quatCalShin[3]);
-        m_footIMU.getCalibration(&m_quatCalFoot[0], &m_quatCalFoot[1], &m_quatCalFoot[2], &m_quatCalFoot[3]);
+    // DISABLE IMU
+    // if (m_timerIMU.check()) {
+    //     // Calibration status
+    //     m_shinIMU.getCalibration(&m_quatCalShin[0], &m_quatCalShin[1], &m_quatCalShin[2], &m_quatCalShin[3]);
+    //     m_footIMU.getCalibration(&m_quatCalFoot[0], &m_quatCalFoot[1], &m_quatCalFoot[2], &m_quatCalFoot[3]);
 
-        // Quaternions
-        m_quatShin = m_shinIMU.getQuat();
-        m_quatFoot = m_footIMU.getQuat();
+    //     // Quaternions
+    //     m_quatShin = m_shinIMU.getQuat();
+    //     m_quatFoot = m_footIMU.getQuat();
 
-        // For printing: acceleration, etc?
-        sensors_event_t shinAccel{};
-        m_shinIMU.getEvent(&shinAccel, Adafruit_BNO055::VECTOR_ACCELEROMETER);
-        sensors_event_t footAccel{};
-        m_footIMU.getEvent(&footAccel, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    //     // For printing: acceleration, etc?
+    //     sensors_event_t shinAccel{};
+    //     m_shinIMU.getEvent(&shinAccel, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    //     sensors_event_t footAccel{};
+    //     m_footIMU.getEvent(&footAccel, Adafruit_BNO055::VECTOR_ACCELEROMETER);
 
-        #ifndef SUPPRESS_IMU
-        printIMUs(&shinAccel, &footAccel);
-        #endif
-    }
+    //     #ifndef SUPPRESS_IMU
+    //     printIMUs(&shinAccel, &footAccel);
+    //     #endif
+    // }
 
-    if (m_timerFSR.check()) {
-        m_fsrVal = analogRead(pin::FSR);
-        #ifndef SUPPRESS_FSR
-        unsigned long t{millis() - m_startTime};
-        SerialOut.print("\nF ");
-        writeBytes(t, 4);   writeBytes(m_fsrVal);
-        #endif
-    }
+    // DISABLE FSR
+    // if (m_timerFSR.check()) {
+    //     m_fsrVal = analogRead(pin::FSR);
+    //     #ifndef SUPPRESS_FSR
+    //     unsigned long t{millis() - m_startTime};
+    //     SerialOut.print("\nF ");
+    //     writeBytes(t, 4);   writeBytes(m_fsrVal);
+    //     #endif
+    // }
 
     if (m_timerLoad.check()) {
         m_loadCellVal = analogRead(pin::LOADCELL);
@@ -251,6 +256,11 @@ void Axo::spin() {
 
     if (m_timerMotor.check()) {
         updateMotors();
+
+        // read potentiometers
+        int currPotL = analogRead(pin::POT_L);
+        int currPotR = analogRead(pin::POT_R);
+        SerialOut.printf("%d, %d\n", m_targetAngleR, currPotR + 1023*m_turnsR);
     }
 
     if (m_estopPressed) {
