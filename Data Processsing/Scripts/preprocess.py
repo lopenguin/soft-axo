@@ -27,7 +27,7 @@ def split(s):
             j += 1
     return ret
 
-FILENAME = sys.argv[1]
+FILENAME = sys.argv[1][:-1]
 
 
 OUTPUT = [('M ', 10),

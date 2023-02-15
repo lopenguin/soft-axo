@@ -1,6 +1,6 @@
 import csv, sys
 DATA_IN = sys.argv[1]
-DATA_OUT = sys.argv[2]
+DATA_OUT = sys.argv[2][:-1]
 
 with open(DATA_IN) as csvfile_in:
     with open(DATA_OUT, 'w') as csvfile_out:

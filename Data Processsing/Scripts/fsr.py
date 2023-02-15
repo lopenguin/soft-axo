@@ -7,7 +7,7 @@ import csv, sys
 RATE = 100 # Hz
 
 FSR_FILE = sys.argv[1]
-OUTPUT_FILE = sys.argv[2]
+OUTPUT_FILE = sys.argv[2][:-1]
 
 with open(FSR_FILE) as ffile:
     with open(OUTPUT_FILE, 'w') as wfile:

@@ -2,12 +2,15 @@
 
 import sys
 
-assert(len(sys.argv) > 2)
+assert(len(sys.argv) > 1)
 
 FILENAME = sys.argv[1]
 
-MESSAGE_FILENAME = sys.argv[2] + r'/capture_message.txt'
-DATA_FILENAME = sys.argv[2] + r'/data.csv'
+if FILENAME[-1] == '\r':
+    FILENAME = FILENAME[:-1]
+
+MESSAGE_FILENAME = r'Data/capture_message.txt'
+DATA_FILENAME = r'Data/data.csv'
 
 import os, csv
 

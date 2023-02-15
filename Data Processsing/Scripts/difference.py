@@ -30,8 +30,8 @@ def q2e(q):
 
 IMU_FILE = "Data/data_I .csv"
 
-QUATERNION_FILE = sys.argv[2] + r"/q.csv"
-EULER_FILE = sys.argv[2] + r"/e.csv"
+QUATERNION_FILE = sys.argv[2][:-1] + r"/q.csv"
+EULER_FILE = sys.argv[2][:-1] + r"/e.csv"
 
 with open(IMU_FILE) as ifile:
     with open(QUATERNION_FILE, 'w') as qfile:
