@@ -5,8 +5,8 @@ from com import Com
 from penguin import Penguins
 
 
-COM1 = '/dev/cu.usbmodem6A_35_4A_B71'
-COM2 = None
+COM1 = 'COM18'
+COM2 = 'COM19'
 GRAPH_ROWS = 1
 GRAPH_COLUMNS = 1
 SCREEN_SIZE = str(GRAPH_COLUMNS * 380 + 300) + 'x' + str(GRAPH_ROWS * 150)
