@@ -1,5 +1,5 @@
 import time, serial
-PORT1 = '/dev/cu.usbmodem6A_35_4A_B71'
+PORT1 = 'COM19'
 PORT2 = None
 
 
@@ -14,10 +14,10 @@ ser2 = serial.Serial(PORT2, 59200, timeout=1)
 
 while True:
     # if output == 'y':
-    #     line = ser1.readline()  
-    #     if line != '':
-    #         print(line)
-    towrite = input('Command: ')
-    ser1.write(bytes(towrite, 'ascii'))
+    line = ser1.readline()  
+    if line.decode() != '':
+        print(line, line.decode())
+    # towrite = input('Command: ')
+    # ser1.write(bytes(towrite, 'ascii'))
     # ser2.write(bytearray(towrite))
     time.sleep(0.01)

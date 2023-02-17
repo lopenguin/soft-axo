@@ -29,7 +29,7 @@ def serial_ports():
     return result
 
 
-def open_port(port, BAUD=57600, timeout=0.1):
+def open_port(port, BAUD=57600, timeout=0.01):
     ser = serial.Serial(port, baudrate=BAUD, timeout=timeout)  # open serial port
     print(ser.name)         # check which port was really used
     return ser
@@ -47,12 +47,15 @@ def is_open(ser):
 
 
 def read(ser):
-    line = ser.readline()
-    buff = str(line, 'ISO-8859-1') # would be technically correct to switch to utf-8 or utf-16
-    if buff != '':
-        return buff[:-1]
-    else:
-        return ''
+    # line = ser.readline()
+    # buff = str(line, 'ISO-8859-1') # would be technically correct to switch to utf-8 or utf-16
+    # if buff != '':
+    #     return buff[:-1]
+    # else:
+    #     return ''
+    bchar = ser.read()
+    char = int.from_bytes(bchar, 'big')
+    return str(char if char != '\r' else '')
     # return 'a'
 
 
