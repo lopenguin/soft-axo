@@ -1,0 +1,6 @@
+https://machinelearningmastery.com/tutorial-first-neural-network-python-keras/
+
+https://www.tensorflow.org/api_docs/python/tf/keras/layers/Lambda
+
+https://github.com/keras-team/keras/blob/v2.10.0/keras/layers/merging/add.py
+

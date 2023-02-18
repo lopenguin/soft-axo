@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "..\\Arduino\\TestSafeControl"
+		},
+		{
+			"path": "..\\..\\Arduino\\ESC_test"
+		}
+	],
+	"settings": {}
+}
