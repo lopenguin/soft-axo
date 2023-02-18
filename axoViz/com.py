@@ -54,8 +54,8 @@ def read(ser):
     # else:
     #     return ''
     bchar = ser.read()
-    char = int.from_bytes(bchar, 'big')
-    return str(char if char != '\r' else '')
+    char = chr(int.from_bytes(bchar, 'big'))
+    return str(char if (char != '\r' and char != '\x00') else '')
     # return 'a'
 
 

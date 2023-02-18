@@ -1,20 +1,23 @@
 import tkinter as tk
 from tkinter import *
 from PIL import Image, ImageTk
-import com, threading, time, sys
+import com, threading, time, os
 from datetime import datetime
+from ctypes import windll
+windll.shcore.SetProcessDpiAwareness(1)
 
 MAIN = 'main frame'
 now = datetime.now()
-CAPTURE_L = 'capture0_' + now.strftime("%m-%d-%Y_%H-%M-%S") + '.txt'
-CAPTURE_R = 'capture1_' + now.strftime("%m-%d-%Y_%H-%M-%S") + '.txt'
+os.mkdir('data\capture_' + now.strftime("%m-%d-%Y_%H-%M-%S"))
+CAPTURE_L = 'data\capture_' + now.strftime("%m-%d-%Y_%H-%M-%S") + '\capture0.txt'
+CAPTURE_R = 'data\capture_' + now.strftime("%m-%d-%Y_%H-%M-%S") + '\capture1.txt'
 
 # build root variable and title bar
 root = Tk()
 ico = Image.open('penguin.png')
 photo = ImageTk.PhotoImage(ico)
 root.wm_iconphoto(False, photo)
-root.geometry("1000x600")
+root.geometry("2000x1200")
 root.title('axOS Visualizer')
 frames = {}
 
@@ -30,11 +33,11 @@ def build_frame():
     frames[TOP][MAIN].pack(side=TOP)
 
     frames[TOP][LEFT] = {}
-    frames[TOP][LEFT][MAIN] = Frame(frames[TOP][MAIN],padx=180)
+    frames[TOP][LEFT][MAIN] = Frame(frames[TOP][MAIN],padx=350)
     frames[TOP][LEFT][MAIN].pack(side=LEFT)
 
     frames[TOP][RIGHT] = {}
-    frames[TOP][RIGHT][MAIN] = Frame(frames[TOP][MAIN],padx=180)
+    frames[TOP][RIGHT][MAIN] = Frame(frames[TOP][MAIN],padx=350)
     frames[TOP][RIGHT][MAIN].pack(side=RIGHT)
 
 
@@ -206,8 +209,8 @@ com_r = OptionMenu(frames[TOP][RIGHT][MAIN] , com2 , *options)
 com_r.pack()
 
 # Create serial read terminals
-read_l = Label(frames[BOTTOM][TOP][LEFT][TOP][MAIN], height = 20, width = 70, anchor='nw', bg='black',fg='white',justify=LEFT,wraplength=350, text = data_l, font=('Lucida Console',8))
-read_r = Label(frames[BOTTOM][TOP][RIGHT][TOP][MAIN], height = 20, width = 70, anchor='nw',bg='black',fg='white',justify=LEFT,wraplength=350, text = data_r, font=('Lucida Console',8))
+read_l = Label(frames[BOTTOM][TOP][LEFT][TOP][MAIN], height = 30, width = 50, anchor='nw', bg='black',fg='white',justify=LEFT,wraplength=1050, text = data_l, font=('Lucida Console',8))
+read_r = Label(frames[BOTTOM][TOP][RIGHT][TOP][MAIN], height = 30, width = 50, anchor='nw',bg='black',fg='white',justify=LEFT,wraplength=1050, text = data_r, font=('Lucida Console',8))
 
 # Create individual serial write terminals
 write_l = Text(frames[BOTTOM][TOP][LEFT][BOTTOM][LEFT][MAIN], height = 1, width = 40)
@@ -246,8 +249,8 @@ thread_com2.start()
 stop = False
 options=['asdf','asdf']
 
-capture_l = open(CAPTURE_L, 'w')
-capture_r = open(CAPTURE_R, 'w')
+capture_l = open(CAPTURE_L, 'w', encoding='utf-8')
+capture_r = open(CAPTURE_R, 'w', encoding='utf-8')
  
 tk.mainloop()
 end()
