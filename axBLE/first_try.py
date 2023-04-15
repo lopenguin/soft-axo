@@ -2,7 +2,8 @@ import asyncio, logging, csv, aioconsole, sys
 from ble_serial.bluetooth.ble_interface import BLE_interface
 from colorama import Fore
 
-BLE_PORT = '35D683ED-8E27-43EF-8AAB-919996092ACB'
+# BLE_PORT = '35D683ED-8E27-43EF-8AAB-919996092ACB'
+BLE_PORT = r'FF:2C:2A:10:3B:77'
 
 class SerialMonitor:
 
@@ -66,6 +67,5 @@ class SerialMonitor:
         self.ble.disconnect()
 
 
-
-sm = SerialMonitor(ADAPTER='hci0', DEVICE='35D683ED-8E27-43EF-8AAB-919996092ACB', FILENAME='save.txt')
-sm.spin(output=False) # output is kinda messed up right now
+sm = SerialMonitor(ADAPTER=None, DEVICE=BLE_PORT, FILENAME='save.txt')
+sm.spin(output=False)
