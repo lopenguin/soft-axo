@@ -30,7 +30,7 @@
 // ----------------------------------------------------------------------------------------------
 // The following sets the optional Mode pin, its recommended but not required
 // ----------------------------------------------------------------------------------------------
-#define BLUEFRUIT_UART_MODE_PIN        35    // Set to -1 if unused
+#define BLUEFRUIT_UART_MODE_PIN        33    // Set to -1 if unused
 
 
 // HARDWARE SPI SETTINGS

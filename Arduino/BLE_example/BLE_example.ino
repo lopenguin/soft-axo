@@ -6,9 +6,7 @@
 #define FACTORYRESET_ENABLE         0
 #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
 
-Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
-
-long i = 0;
+Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, 4);
 
 void error(const __FlashStringHelper*err) {
   Serial.println(err);
@@ -17,6 +15,10 @@ void error(const __FlashStringHelper*err) {
 
 void setup(void)
 {
+  pinMode(BLUEFRUIT_UART_MODE_PIN, OUTPUT);
+  digitalWrite(BLUEFRUIT_UART_MODE_PIN, HIGH);
+  delay(1000);
+  
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit AXO"));
   Serial.println(F("---------------------------------------"));
@@ -64,18 +66,18 @@ void setup(void)
   }
 
   Serial.println("Success! Starting...");
-  delay(15000);
+  digitalWrite(BLUEFRUIT_UART_MODE_PIN, LOW);
+  delay(1000);
 }
 
 void loop(void) {
-  //  char ret;
-  //  if (Serial.available()) {
-  //    ret = Serial.read();
-  //    Serial.write(ret);
-  //    ble.write(ret);
-  //  }
-  if (i < 20000) {
-      ble.write((char)(97 + i % 26));
-  }
-  i++;
+   char ret;
+   if (Serial.available()) {
+     ret = Serial.read();
+     ble.write(ret);
+   }
+
+   if (ble.available()) {
+    Serial.write(ble.read());
+   }
 }

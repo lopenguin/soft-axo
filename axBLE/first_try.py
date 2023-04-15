@@ -1,5 +1,6 @@
-import asyncio, logging, csv
+import asyncio, logging, csv, aioconsole, sys
 from ble_serial.bluetooth.ble_interface import BLE_interface
+from colorama import Fore
 
 BLE_PORT = '35D683ED-8E27-43EF-8AAB-919996092ACB'
 
@@ -13,8 +14,15 @@ class SerialMonitor:
     
     def receive_callback(self, value: bytes):
         msg = value.decode()
-        if self.output: print(value.decode())
+        if self.output: print('Recieved value:\n' + value.decode())
         self.file.write(msg + '\n')
+
+    async def send(self):
+        while True:
+            msg = await aioconsole.ainput('> ')
+            tosend = bytearray(msg + '\n', 'UTF-8')
+            for i in range(0, len(tosend) // 10 + 1):
+                self.ble.queue_send(tosend[10 * i:min(len(tosend), 10 * i + 10)])
 
 
     async def main(self):
@@ -27,20 +35,30 @@ class SerialMonitor:
         self.ble.set_receiver(self.receive_callback)
 
         try:
+            print(Fore.CYAN + 'Connecting to device...')
             await self.ble.connect(self.DEVICE, "public", 10.0)
             await self.ble.setup_chars(WRITE_UUID, READ_UUID, "rw")
+            print(Fore.GREEN + f'Connected to {self.ble.dev.address}!')
 
-            await asyncio.gather(self.ble.send_loop())
+            print(Fore.WHITE + '+' * 10 + 'BEGIN SERIAL MONITOR' + '+' * 10)
+            await asyncio.gather(self.ble.send_loop(), self.send())
         finally:
+            
             self.file.close()
             await self.ble.disconnect()
+            print(Fore.RED + 'Process finished!')
 
 
     def spin(self, output=True):
-        self.output = output
-        self.file = open(self.FILENAME, 'w')
-        logging.basicConfig(level=logging.INFO)
-        asyncio.run(self.main())
+        try:
+            self.output = output
+            self.file = open(self.FILENAME, 'w')
+            logging.basicConfig(level=logging.WARNING)
+            asyncio.run(self.main())
+        except KeyboardInterrupt:
+            print('-' * 40)
+            print(Fore.RED + 'User interruption.')
+            pass
 
     
     def shutdown(self):
@@ -49,5 +67,5 @@ class SerialMonitor:
 
 
 
-sm = SerialMonitor(ADAPTER='hci0', DEVICE='35D683ED-8E27-43EF-8AAB-919996092ACB', FILENAME='save.csv')
-sm.spin()
+sm = SerialMonitor(ADAPTER='hci0', DEVICE='35D683ED-8E27-43EF-8AAB-919996092ACB', FILENAME='save.txt')
+sm.spin(output=False) # output is kinda messed up right now
