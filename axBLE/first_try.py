@@ -1,7 +1,8 @@
 import asyncio, logging, csv
 from ble_serial.bluetooth.ble_interface import BLE_interface
 
-BLE_PORT = '35D683ED-8E27-43EF-8AAB-919996092ACB'
+# BLE_PORT = '35D683ED-8E27-43EF-8AAB-919996092ACB'
+BLE_PORT = r'FF:2C:2A:10:3B:77'
 
 class SerialMonitor:
 
@@ -49,5 +50,5 @@ class SerialMonitor:
 
 
 
-sm = SerialMonitor(ADAPTER='hci0', DEVICE='35D683ED-8E27-43EF-8AAB-919996092ACB', FILENAME='save.csv')
+sm = SerialMonitor(ADAPTER=None, DEVICE=BLE_PORT, FILENAME='save.csv')
 sm.spin()
