@@ -1,9 +1,7 @@
 import asyncio, logging, csv, aioconsole, sys
 from ble_serial.bluetooth.ble_interface import BLE_interface
 from colorama import Fore
-
-# BLE_PORT = '35D683ED-8E27-43EF-8AAB-919996092ACB'
-BLE_PORT = r'FF:2C:2A:10:3B:77'
+from ble_serial.scan import main as scanner
 
 class SerialMonitor:
 
@@ -12,11 +10,33 @@ class SerialMonitor:
         self.DEVICE = DEVICE
         self.FILENAME = FILENAME
 
+
+    async def detect_device(self, device_name, output=False):
+        ADAPTER = "hci0"
+        SCAN_TIME = 5 # seconds
+        SERVICE_UUID = None # optional filtering
+
+        devices = await scanner.scan(ADAPTER, SCAN_TIME, SERVICE_UUID)
+
+        if output:
+            print('---SCANNED DEVICES---')
+            scanner.print_list(devices)
+            print('---------------------')
+
+        axo = None
+        for device in devices:
+            if device.name == device_name:
+                print(f'{device_name} found!')
+                return device.address
+            
+        return None
+
     
     def receive_callback(self, value: bytes):
         msg = value.decode()
         if self.output: print('Recieved value:\n' + value.decode())
         self.file.write(msg + '\n')
+
 
     async def send(self):
         while True:
@@ -37,7 +57,8 @@ class SerialMonitor:
 
         try:
             print(Fore.CYAN + 'Connecting to device...')
-            await self.ble.connect(self.DEVICE, "public", 10.0)
+            address = await asyncio.run(self.detect_device(self.DEVICE))
+            await self.ble.connect(address, "public", 10.0)
             await self.ble.setup_chars(WRITE_UUID, READ_UUID, "rw")
             print(Fore.GREEN + f'Connected to {self.ble.dev.address}!')
 
@@ -67,5 +88,5 @@ class SerialMonitor:
         self.ble.disconnect()
 
 
-sm = SerialMonitor(ADAPTER=None, DEVICE=BLE_PORT, FILENAME='save.txt')
+sm = SerialMonitor(ADAPTER=None, DEVICE='AXO', FILENAME='save.txt')
 sm.spin(output=False)

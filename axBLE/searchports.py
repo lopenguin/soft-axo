@@ -14,31 +14,8 @@ async def main():
     scanner.print_list(devices)
     axo = None
     for device in devices:
-        if device.name == 'AXO-LEFT':
-            axo = device
-            break
-
-    
-
-    # # manual indexing
-    # print(devices[0].name, devices[0].address)
-
-
-    # ### deep scan get's services/characteristics
-    # DEVICE = "20:91:48:4C:4C:54"
-    # services = await scanner.deep_scan(DEVICE, devices)
-
-    # scanner.print_details(services)
-    # print() # newline
-
-    # # manual indexing by uuid
-    # print(services.get_service('0000ffe0-0000-1000-8000-00805f9b34fb'))
-    # print(services.get_characteristic('0000ffe1-0000-1000-8000-00805f9b34fb'))
-    # # or by handle
-    # print(services.services[16])
-    # print(services.characteristics[17])
-
-
+        if device.name == 'AXO':
+            return device.address
 
 if __name__ == "__main__":
     asyncio.run(main())
