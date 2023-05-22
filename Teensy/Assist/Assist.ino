@@ -7,6 +7,8 @@ Connects to both left and right exoskeletons.
 
 #include "constants.h"
 
+double CONST_STEP_TIME{ 2000.0 };
+
 class Axo {
 public:
     Axo(bool left) : m_timerFSR{timer::FSR},
@@ -16,16 +18,18 @@ public:
         if (left) {
             m_PIN_FSR = pin::FSR_L;
             m_PIN_LOADCELL = pin::LOADCELL_L;
+            motor = &Serial3;
         } else {
             m_PIN_FSR = pin::FSR_R;
             m_PIN_LOADCELL = pin::LOADCELL_R;
+            motor = &Serial5;
         }
     }
 
     void begin() // starts up sensors. Call once in setup
     {
         /** MOTOR **/
-        // Serial8.begin(9600); (TODO: FIGURE OUT HOW TO SEPARATE LEFT AND RIGHT MOTORS)
+        motor->begin(9600);
         // TODO: write upper and lower limits
 
         /** FSR **/
@@ -35,6 +39,9 @@ public:
 
         // extra delay just to be safe
         delay(1000);
+
+        // TODO: ADD LIMITS
+        motor->printf("[]")
     }
 
     void start() // resets timers
@@ -65,9 +72,14 @@ public:
         }
     }
 
+    // double getGaitPercent() {
+    //     unsigned long dt{ millis() - m_startTime };
+    //     double percent = static_cast<double>(dt) / m_stepTimeAccum;
+    //     return percent;
+    // }
     double getGaitPercent() {
         unsigned long dt{ millis() - m_startTime };
-        double percent = static_cast<double>(dt) / m_stepTimeAccum;
+        double percent = static_cast<double>(dt) / CONST_STEP_TIME;
         return percent;
     }
 
@@ -76,15 +88,18 @@ public:
         // converts output angle to motor angle
         constexpr int GEAR_RATIO{ 106 };
         deg *= GEAR_RATIO;
-        Serial8.printf('[M] %d', deg);
+        motor->printf("[M%d]\n", deg);
     }
 
     void disableMotor() // stop the motor completely
     {
-        Serial8.print('[D]');
+        motor->print("[D]\n");
     }
 
 private:
+    // Serial pointers
+    HardwareSerial* motor;
+
     // Metro timers (for sensors)
     Metro m_timerFSR;
     Metro m_timerLoad;
@@ -123,6 +138,9 @@ void setup() {
     // start up sensors
     axoL.begin();
     axoR.begin();
+    
+    // start up BLE
+    // TODO
 
     // Wait for a startup command
     Serial.println("Waiting for startup");
